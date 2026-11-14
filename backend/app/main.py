@@ -56,7 +56,8 @@ def work(run_id: str, req: AnalyzeRequest):
         run = run_agent(req.query, emit, req.brief)
         rec["result"] = RunResult(runId=run_id, brief=run.brief, sites=ranked(run), report=run.report,
                                   createdAt=datetime.now(timezone.utc).isoformat())
-        if not config.OFFLINE and not any(e == "error" for _, e, _ in timed):
+        # only a clean agent run is worth replaying: no fatal error, no switch to auto mode
+        if not config.OFFLINE and not any(e == "error" or d.get("id") == "fallback" for _, e, d in timed):
             # shortcut: the first clean run of a query is kept; delete backend/cache/runs/ to re-record
             cached("runs", key, lambda: {"events": timed, "result": rec["result"].model_dump()})
     except Exception as e:

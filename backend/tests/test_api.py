@@ -1,8 +1,15 @@
+import pytest
 from fastapi.testclient import TestClient
 
+from app import cache
 from app.main import app
 
 client = TestClient(app)
+
+
+@pytest.fixture(autouse=True)
+def tmp_cache(tmp_path, monkeypatch):
+    monkeypatch.setattr(cache, "CACHE_DIR", tmp_path)  # recorded runs must never land in the real cache
 
 
 def test_health():
@@ -51,10 +58,9 @@ def test_agent_failure_is_fatal_error_then_done(monkeypatch):
 
 
 def test_offline_replays_a_recorded_run(monkeypatch, tmp_path):
-    from app import cache, config, main
+    from app import config, main
     from app.models import BusinessBrief
 
-    monkeypatch.setattr(cache, "CACHE_DIR", tmp_path)
     monkeypatch.setattr(main, "MAX_REPLAY_GAP_S", 0)
     b = BusinessBrief(businessType="boba", city="Houston", maxRentMonthly=6000)
 
@@ -72,3 +78,18 @@ def test_offline_replays_a_recorded_run(monkeypatch, tmp_path):
     body = client.get(f"/api/runs/{run_id}/events").text
     assert [l[7:] for l in body.splitlines() if l.startswith("event: ")] == ["brief", "plan", "done"]
     assert client.get(f"/api/runs/{run_id}").json()["runId"] == run_id
+
+
+def test_auto_mode_run_is_not_recorded(monkeypatch, tmp_path):
+    from app import main
+    from app.models import BusinessBrief
+
+    b = BusinessBrief(businessType="boba", city="Houston", maxRentMonthly=6000)
+
+    def fake_agent(query, emit, brief=None):
+        emit("step", {"id": "fallback", "tool": "pipeline", "siteId": None, "status": "running", "message": "429"})
+        return type("R", (), {"brief": b, "report": "auto", "sites": {}, "ranking": []})()
+
+    monkeypatch.setattr(main, "run_agent", fake_agent)
+    client.get(f"/api/runs/{client.post('/api/analyze', json={'query': 'boba'}).json()['runId']}/events")
+    assert not (tmp_path / "runs").exists()
