@@ -2,6 +2,7 @@ import asyncio
 import json
 import secrets
 import threading
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -10,6 +11,7 @@ from fastapi.sse import EventSourceResponse, ServerSentEvent
 from pydantic import BaseModel
 
 from app import config
+from app.cache import CacheMiss, cached
 from app.agent.run import ranked, run_agent
 from app.models import BusinessBrief, RunResult
 from app.tools import costar, matterport, vexcel
@@ -32,16 +34,44 @@ class AnalyzeRequest(BaseModel):
     brief: BusinessBrief | None = None
 
 
+MAX_REPLAY_GAP_S = 2.0
+
+
 def work(run_id: str, req: AnalyzeRequest):
     rec = RUNS[run_id]
-    emit = lambda e, d: rec["events"].append((e, d))  # list.append is thread-safe; the SSE reader only reads
+    key = {"query": req.query.strip().lower(), "brief": req.brief and req.brief.model_dump()}
+    if config.OFFLINE:  # demo without Wi-Fi: replay a recorded live run, agent plan and all
+        try:
+            replay(run_id, rec, cached("runs", key, lambda: None))
+            return
+        except CacheMiss:
+            pass  # never recorded: the agent fails over to the pipeline, which runs from cached tool data
+    started, timed = time.monotonic(), []
+
+    def emit(e, d):
+        rec["events"].append((e, d))  # list.append is thread-safe; the SSE reader only reads
+        timed.append((round(time.monotonic() - started, 2), e, d))
+
     try:
         run = run_agent(req.query, emit, req.brief)
         rec["result"] = RunResult(runId=run_id, brief=run.brief, sites=ranked(run), report=run.report,
                                   createdAt=datetime.now(timezone.utc).isoformat())
+        if not config.OFFLINE and not any(e == "error" for _, e, _ in timed):
+            # shortcut: the first clean run of a query is kept; delete backend/cache/runs/ to re-record
+            cached("runs", key, lambda: {"events": timed, "result": rec["result"].model_dump()})
     except Exception as e:
         emit("error", {"message": f"{type(e).__name__}: {e}"[:200], "fatal": True})
     emit("done", {"runId": run_id})
+
+
+def replay(run_id: str, rec: dict, recording: dict):
+    prev = 0.0
+    for t, e, d in recording["events"]:
+        time.sleep(min(t - prev, MAX_REPLAY_GAP_S))
+        prev = t
+        rec["events"].append((e, d))
+    rec["result"] = RunResult(**{**recording["result"], "runId": run_id})
+    rec["events"].append(("done", {"runId": run_id}))
 
 
 @api.post("/analyze", status_code=202)

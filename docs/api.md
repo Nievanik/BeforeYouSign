@@ -49,6 +49,8 @@ The stream replays from the first event, so a reconnect or late subscriber misse
 
 Returns `RunResult` (brief, sites with sim results, report). `404` if the id is unknown, `409` while the run is still going. Runs are kept in memory, so a server restart forgets them (`golden` is always there).
 
+The first clean live run of each query is recorded to `backend/cache/runs/`. With `OFFLINE=1`, `/analyze` replays that recording (same events, pauses capped at 2 s), so the demo shows the agent's plan with Wi-Fi off. Delete the recording to re-record.
+
 ## `GET /sites/{siteId}/aerial.jpg`
 
 Cached Vexcel ortho image with the parcel outline drawn on it. The key stays server-side; the browser only sees this proxy.

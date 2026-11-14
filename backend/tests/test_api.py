@@ -48,3 +48,27 @@ def test_agent_failure_is_fatal_error_then_done(monkeypatch):
     body = client.get(f"/api/runs/{run_id}/events").text
     assert "event: error" in body and '"fatal":true' in body.replace(" ", "") and "event: done" in body
     assert client.get(f"/api/runs/{run_id}").status_code == 409
+
+
+def test_offline_replays_a_recorded_run(monkeypatch, tmp_path):
+    from app import cache, config, main
+    from app.models import BusinessBrief
+
+    monkeypatch.setattr(cache, "CACHE_DIR", tmp_path)
+    monkeypatch.setattr(main, "MAX_REPLAY_GAP_S", 0)
+    b = BusinessBrief(businessType="boba", city="Houston", maxRentMonthly=6000)
+
+    def fake_agent(query, emit, brief=None):
+        emit("brief", b.model_dump())
+        emit("plan", {"todos": []})
+        return type("R", (), {"brief": b, "report": "live", "sites": {}, "ranking": []})()
+
+    monkeypatch.setattr(main, "run_agent", fake_agent)
+    client.get(f"/api/runs/{client.post('/api/analyze', json={'query': 'Boba'}).json()['runId']}/events")
+
+    monkeypatch.setattr(config, "OFFLINE", True)
+    monkeypatch.setattr(main, "run_agent", lambda *a: 1 / 0)  # must not be called offline
+    run_id = client.post("/api/analyze", json={"query": " boba "}).json()["runId"]
+    body = client.get(f"/api/runs/{run_id}/events").text
+    assert [l[7:] for l in body.splitlines() if l.startswith("event: ")] == ["brief", "plan", "done"]
+    assert client.get(f"/api/runs/{run_id}").json()["runId"] == run_id
