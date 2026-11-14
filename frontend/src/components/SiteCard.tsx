@@ -17,15 +17,15 @@ function parkingText(site: Site): string {
 }
 
 function oddsColor(odds: number): string {
-  if (odds >= 0.6) return '#16a34a' // Green
-  if (odds >= 0.4) return '#d97706' // Amber
-  return '#dc2626' // Red
+  if (odds >= 0.6) return '#3E4928' // Forest olive
+  if (odds >= 0.4) return '#C26E2D' // Warm apricot amber
+  return '#DA4324' // Burnt orange
 }
 
 function oddsBg(odds: number): string {
-  if (odds >= 0.6) return '#f0fdf4'
-  if (odds >= 0.4) return '#fffbeb'
-  return '#fef2f2'
+  if (odds >= 0.6) return '#EEF3E8' // Soft sage cream
+  if (odds >= 0.4) return '#FAF1E6' // Warm apricot cream
+  return '#FDF1EE' // Warm terracotta cream
 }
 
 const ABBR: Record<string, string> = { north: 'N', east: 'E', south: 'S', west: 'W' }
