@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import AgentLogPanel, { type AgentStep } from './components/AgentLogPanel'
-import AgentReport from './components/AgentReport'
 import QueryBox from './components/QueryBox'
 import Report from './components/Report'
 import SiteCard from './components/SiteCard'
@@ -17,7 +16,8 @@ export default function App() {
   const [loading, setLoading] = useState(false)
   const [steps, setSteps] = useState<AgentStep[]>([])
   const [showReport, setShowReport] = useState(false)
-  const [showLeftPanel, setShowLeftPanel] = useState(true)
+  const [showLeftPanel, setShowLeftPanel] = useState(false)
+  const [hasSearched, setHasSearched] = useState(false)
   const [activeNav, setActiveNav] = useState<'explore' | 'simulations'>('explore')
   const [picks, setPicks] = useState<string[]>([]) // the agent's top picks, sent before their simulations
 
@@ -33,6 +33,8 @@ export default function App() {
 
   // Live /analyze stream (Dev 2 Hours 6.5–9)
   const handleSearch = (query: string) => {
+    setHasSearched(true)
+    setShowLeftPanel(true)
     setLoading(true)
     setError('')
     setSteps([])
@@ -116,7 +118,7 @@ export default function App() {
             .then((final: RunResult) => {
               setRun(final)
             })
-            .catch(() => {}) // keep the streamed cards if the fetch fails (e.g. a fatal error left no result)
+            .catch(() => { }) // keep the streamed cards if the fetch fails (e.g. a fatal error left no result)
             .finally(() => setLoading(false))
         })
 
@@ -203,6 +205,7 @@ export default function App() {
             onClick={() => {
               setActiveNav('simulations')
               setShowLeftPanel(true)
+              setHasSearched(true)
               const card = document.querySelector('.card')
               if (card) card.scrollIntoView({ behavior: 'smooth' })
             }}
@@ -242,13 +245,17 @@ export default function App() {
       {/* Main Map + Sidebar Workspace */}
       <main className="main-content">
         <SiteMap
-          sites={shownSites}
+          sites={hasSearched ? shownSites : []}
           selectedSiteId={selectedSiteId}
-          onSelectSite={setSelectedSiteId}
+          onSelectSite={(id) => {
+            setSelectedSiteId(id)
+            setHasSearched(true)
+            setShowLeftPanel(true)
+          }}
         />
 
         {/* Floating Decision Report circular button at bottom left */}
-        {run && (
+        {hasSearched && run && (
           <button
             type="button"
             className="bottom-left-report-btn no-print"
@@ -281,12 +288,12 @@ export default function App() {
               <line x1="3" y1="18" x2="21" y2="18" />
             </svg>
             <span className="toggle-btn-label">
-              Explore Locations {run?.sites && run.sites.length > 0 ? `(${run.sites.length})` : ''}
+              Explore Locations {hasSearched && run?.sites && run.sites.length > 0 ? `(${run.sites.length})` : ''}
             </span>
           </button>
         )}
 
-        {/* Left Column: Editorial Search & Candidate Properties Sidebar */}
+        {/* Left Column: Editorial Search & Candidate Findings Sidebar */}
         <div className={`left-panel no-print ${!showLeftPanel ? 'is-collapsed' : ''}`}>
           <QueryBox
             brief={run?.brief}
@@ -295,34 +302,8 @@ export default function App() {
             onTogglePanel={() => setShowLeftPanel(false)}
           />
 
-          {run && (
+          {hasSearched && run && (
             <aside className="sites">
-              <div className="sites-header editorial-card">
-                <div className="sites-header-left">
-                  <span className="sites-header-spark">✦</span>
-                  <span className="sites-header-title">
-                    {loading && !picked.length ? 'Finding locations' : 'Top Picks'}
-                  </span>
-                  <span className="sites-count-pill">{loading && !picked.length ? run.sites.length : shownSites.length}</span>
-                </div>
-
-                <div className="sites-header-right">
-                  {loading && <span className="streaming-badge">● streaming…</span>}
-                </div>
-              </div>
-
-              {run.report && !loading && (
-                <details className="agent-report-card editorial-card" open>
-                  <summary className="agent-report-summary">
-                    <span className="summary-icon">✦</span>
-                    <span>AI Location Recommendation</span>
-                  </summary>
-                  <div className="agent-report-content">
-                    <AgentReport markdown={run.report} />
-                  </div>
-                </details>
-              )}
-
               {shownSites.map((s, i) => (
                 <SiteCard
                   key={s.id}
