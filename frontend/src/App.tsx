@@ -18,7 +18,6 @@ export default function App() {
   const [showReport, setShowReport] = useState(false)
   const [showLeftPanel, setShowLeftPanel] = useState(false)
   const [hasSearched, setHasSearched] = useState(false)
-  const [activeNav, setActiveNav] = useState<'explore' | 'simulations'>('explore')
   const [picks, setPicks] = useState<string[]>([]) // the agent's top picks, sent before their simulations
 
   // Load initial golden fixture on start
@@ -187,41 +186,6 @@ export default function App() {
             <span className="brand-sub">LOCATION INTELLIGENCE</span>
           </div>
         </div>
-
-        <nav className="nav-menu">
-          <button
-            type="button"
-            className={`nav-menu-btn ${activeNav === 'explore' ? 'is-active' : ''}`}
-            onClick={() => {
-              setActiveNav('explore')
-              setShowLeftPanel(true)
-            }}
-          >
-            Explore Locations
-          </button>
-          <button
-            type="button"
-            className={`nav-menu-btn ${activeNav === 'simulations' ? 'is-active' : ''}`}
-            onClick={() => {
-              setActiveNav('simulations')
-              setShowLeftPanel(true)
-              setHasSearched(true)
-              const card = document.querySelector('.card')
-              if (card) card.scrollIntoView({ behavior: 'smooth' })
-            }}
-          >
-            Simulations
-          </button>
-          <button
-            type="button"
-            className="nav-menu-btn"
-            onClick={() => setShowReport(true)}
-            disabled={!run}
-            title="Open printable executive decision brief"
-          >
-            Executive Brief
-          </button>
-        </nav>
 
         <div className="nav-action-section">
           <button
