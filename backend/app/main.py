@@ -5,7 +5,7 @@ from fastapi import APIRouter, FastAPI, HTTPException, Response
 
 from app import config
 from app.models import RunResult
-from app.tools import costar, vexcel
+from app.tools import costar, matterport, vexcel
 
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures"
 
@@ -48,5 +48,15 @@ def oblique_jpg(site_id: str, direction: str):
     if f"oblique-{direction}" not in vexcel.oblique_directions(wkt):
         raise HTTPException(404, "no angled photo from that direction here")
     return Response(vexcel.oblique_jpeg(wkt, f"oblique-{direction}"), media_type="image/jpeg")
+
+
+@api.get("/sites/{site_id}/floorplan.jpg")
+def floorplan_jpg(site_id: str):
+    site = costar.get_site(site_id)
+    img = site and site.matterportModelId and matterport.floorplan_jpeg(site.matterportModelId)
+    if not img:
+        raise HTTPException(404, "no floor plan for this site")
+    return Response(img, media_type="image/jpeg")
+
 
 app.include_router(api)

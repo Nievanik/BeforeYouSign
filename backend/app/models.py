@@ -40,6 +40,7 @@ class Interior(BaseModel):
     rooms: list[Room] = []
     estSeats: int
     tourUrl: str
+    summary: Optional[str] = None  # Matterport's auto-written description of the scan
 
 
 class Competitor(BaseModel):

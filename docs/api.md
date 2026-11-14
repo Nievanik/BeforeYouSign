@@ -54,6 +54,10 @@ Cached Vexcel ortho image with the parcel outline drawn on it. The key stays ser
 
 Cached Vexcel angled photo (`north`/`east`/`south`/`west`, newest capture), parcel outlined. `oblique-north` = camera **facing** north, so it shows the building's south side. `404` if that direction isn't available.
 
+## `GET /sites/{id}/floorplan.jpg`
+
+Cached Matterport floor plan of the site's 3D scan. `404` if the site has no scan or no floor plan.
+
 ## `GET /health`
 
 `{ "ok": true, "offline": false }`

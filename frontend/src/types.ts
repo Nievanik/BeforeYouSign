@@ -33,6 +33,7 @@ export interface Interior {
   rooms: Room[]
   estSeats: number
   tourUrl: string
+  summary: string | null
 }
 
 export interface Competitor {
