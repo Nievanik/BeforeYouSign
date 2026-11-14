@@ -7,7 +7,8 @@ from fastapi import APIRouter, FastAPI, HTTPException, Response
 from pydantic import BaseModel
 
 from app import config
-from app.models import RunResult, SimResult, Site
+from app.agent.report import generate_report
+from app.models import BusinessBrief, RunResult, SimResult, Site
 from app.sim import simulate
 from app.tools import costar, matterport, vexcel
 
@@ -42,6 +43,16 @@ def simulate_site(req: SimulateRequest):
         raise HTTPException(400, f"simulation failed: {e}")
 
 
+class ReportRequest(BaseModel):
+    brief: BusinessBrief
+    sites: list[Site]
+
+
+@api.post("/report")
+def make_report(req: ReportRequest):
+    return {"markdown": generate_report(req.brief, req.sites)}
+
+
 @api.get("/health")
 def health():
     return {"ok": True, "offline": config.OFFLINE}
@@ -52,7 +63,11 @@ def get_run(run_id: str):
     # shortcut: only the "golden" fixture exists until /analyze stores real runs (Phase 4)
     if run_id != "golden":
         raise HTTPException(404, "unknown run")
-    return json.loads((FIXTURES / "golden_run.json").read_text())
+    data = json.loads((FIXTURES / "golden_run.json").read_text())
+    run = RunResult(**data)
+    if not run.report or "placeholder" in run.report:
+        run.report = generate_report(run.brief, run.sites)
+    return run
 
 
 @api.get("/sites/{site_id}/aerial.jpg")

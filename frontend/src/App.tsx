@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import Report from './components/Report'
 import SiteCard from './components/SiteCard'
 import SiteMap from './components/SiteMap'
 import type { RunResult } from './types'
@@ -6,6 +7,7 @@ import type { RunResult } from './types'
 export default function App() {
   const [run, setRun] = useState<RunResult | null>(null)
   const [error, setError] = useState('')
+  const [showReport, setShowReport] = useState(false)
 
   useEffect(() => {
     // shortcut: loads the fixture run; swap for POST /api/analyze + SSE in Phase 5
@@ -16,16 +18,53 @@ export default function App() {
   }, [])
 
   return (
-    <>
-      <SiteMap sites={run?.sites ?? []} />
-      {run && (
-        <aside className="sites">
-          {run.sites.map((s, i) => (
-            <SiteCard key={s.id} site={s} rank={i + 1} />
-          ))}
-        </aside>
+    <div className="app-layout">
+      {/* Top Application Bar */}
+      <header className="app-topbar no-print">
+        <div className="topbar-brand">
+          <span className="brand-logo">📍 BeforeYouSign</span>
+          {run && (
+            <span className="brief-pill">
+              {run.brief.businessType.toUpperCase()} in {run.brief.city} · Max ${run.brief.maxRentMonthly.toLocaleString()}/mo
+            </span>
+          )}
+        </div>
+        {run && (
+          <div className="topbar-actions">
+            <button
+              type="button"
+              className="decision-report-btn"
+              onClick={() => setShowReport(true)}
+              title="Open one-page executive report ready to print or export as PDF"
+            >
+              📄 Decision Report (PDF)
+            </button>
+          </div>
+        )}
+      </header>
+
+      {/* Map & Sites Container */}
+      <main className="main-content">
+        <SiteMap sites={run?.sites ?? []} />
+        {run && (
+          <aside className="sites no-print">
+            {run.sites.map((s, i) => (
+              <SiteCard key={s.id} site={s} rank={i + 1} />
+            ))}
+          </aside>
+        )}
+      </main>
+
+      {/* One-Page Printable Report Modal */}
+      {showReport && run && (
+        <Report run={run} onClose={() => setShowReport(false)} />
       )}
-      {error && <div role="alert" style={{ position: 'absolute', top: 12, left: 12, background: '#fee', padding: 8 }}>{error}</div>}
-    </>
+
+      {error && (
+        <div role="alert" className="error-alert no-print">
+          {error}
+        </div>
+      )}
+    </div>
   )
 }
