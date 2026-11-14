@@ -11,10 +11,7 @@ OPENROUTER_MODEL = os.getenv("OPENROUTER_MODEL", "")
 VEXCEL_API_KEY = os.getenv("VEXCEL_API_KEY", "")
 MATTERPORT_API_KEY = os.getenv("MATTERPORT_API_KEY", "")
 MATTERPORT_API_TOKEN = os.getenv("MATTERPORT_API_TOKEN", "")
-# DEMO=1: Analyze replays a saved dataset (backend/demo_data/) and nothing calls an external API
-DEMO = os.getenv("DEMO") == "1"
-OFFLINE = os.getenv("OFFLINE") == "1" or DEMO
-DEMO_DIR = Path(__file__).resolve().parents[1] / "demo_data"
+OFFLINE = os.getenv("OFFLINE") == "1"
 COSTAR_DIR = Path(__file__).resolve().parents[2] / "Hackathon" / "API_docs" / "costar-kit"
 OPENROUTER_VISION_MODEL = os.getenv("OPENROUTER_VISION_MODEL") or OPENROUTER_MODEL
 USER_AGENT = "BeforeYouSign-hackathon/0.1"  # generic: no personal contact in requests
