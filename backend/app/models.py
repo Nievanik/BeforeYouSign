@@ -25,6 +25,7 @@ class Aerial(BaseModel):
     collection: Optional[str] = None
     parkingSeen: Optional[int] = None  # from parking rows detected on the parcel in one photo; null = count unclear (areas still outlined); display only
     imageUrl: str
+    obliqueDirections: list[str] = []  # "north"/"east"/"south"/"west": angled photos at /api/sites/{id}/oblique/{dir}.jpg
 
 
 class Room(BaseModel):

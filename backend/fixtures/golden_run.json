@@ -33,7 +33,13 @@
         "roadAccessReason": null,
         "collection": "us-tx-houstonr2-2023",
         "parkingSeen": 48,
-        "imageUrl": "/api/sites/L20031202-S21327553/aerial.jpg"
+        "imageUrl": "/api/sites/L20031202-S21327553/aerial.jpg",
+        "obliqueDirections": [
+          "north",
+          "east",
+          "south",
+          "west"
+        ]
       },
       "interior": {
         "floorAreaSqft": 2278.1,
@@ -443,7 +449,13 @@
         "roadAccessReason": null,
         "collection": "us-tx-houston_rf08-2023",
         "parkingSeen": null,
-        "imageUrl": "/api/sites/L3940397-S12505498/aerial.jpg"
+        "imageUrl": "/api/sites/L3940397-S12505498/aerial.jpg",
+        "obliqueDirections": [
+          "north",
+          "east",
+          "south",
+          "west"
+        ]
       },
       "interior": {
         "floorAreaSqft": 7998.2,
@@ -703,7 +715,13 @@
         "roadAccessReason": null,
         "collection": "us-tx-houston-2026",
         "parkingSeen": null,
-        "imageUrl": "/api/sites/L25256146-S22287729/aerial.jpg"
+        "imageUrl": "/api/sites/L25256146-S22287729/aerial.jpg",
+        "obliqueDirections": [
+          "north",
+          "east",
+          "south",
+          "west"
+        ]
       },
       "interior": {
         "floorAreaSqft": 1833.2,

@@ -50,11 +50,16 @@ Returns `RunResult` (brief, sites with sim results, report). `404` if the id is 
 
 Cached Vexcel ortho image with the parcel outline drawn on it. The key stays server-side; the browser only sees this proxy.
 
+## `GET /sites/{siteId}/oblique/{direction}.jpg`
+
+Cached Vexcel angled photo (`north`/`east`/`south`/`west`, newest capture), parcel outlined. `oblique-north` = camera **facing** north, so it shows the building's south side. `404` if that direction isn't available.
+
 ## `GET /health`
 
 `{ "ok": true, "offline": false }`
 
 ## Frontend notes
 
-- Matterport tour: iframe `https://my.matterport.com/show/?m={matterportModelId}&applicationKey={VITE_MATTERPORT_SDK_KEY}`. This is the only key in the browser, and it's domain-locked to localhost.
+- Matterport tour: iframe `https://my.matterport.com/show/?m={matterportModelId}&play=1&dh=1&qs=1`. The kit's models are public, so no key is needed in the browser (the SDK key is only for SDK control). It loads only when the user clicks, because it's heavy.
+- Matterport also returns downloadable `.obj` meshes (`model.assets.meshes`, 50k/500k, defurnished). Not used yet; an option for a 3D view on the map.
 - No auth: local demo only.

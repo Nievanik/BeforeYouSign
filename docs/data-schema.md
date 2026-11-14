@@ -60,6 +60,7 @@ Keep `serviceType`: TripleNet rent excludes taxes, insurance and CAM, so add `co
 | `collection` | str | `metadata.collection` (capture date for credibility) |
 | `parkingSeen` | int? | spaces on the parcel from `elements/detect` "parking space" boxes: each box is a **row**, spaces = row length ÷ 2.75 m. `null` when boxes overlap, aren't row-shaped, or sit off the parcel (diagonal lots). **Display only**, never in the odds |
 | `imageUrl` | str | `/api/sites/{id}/aerial.jpg` |
+| `obliqueDirections` | list[str] | directions with an angled photo in the newest capture (`oriented/collections`) |
 
 ## Interior (Matterport)
 

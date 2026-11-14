@@ -57,6 +57,41 @@ def ortho_jpeg(wkt: str, boxes: list[str] | None = None) -> bytes:
     return base64.b64decode(cached("vexcel-ortho", key, fetch))
 
 
+DIRECTIONS = ("oblique-north", "oblique-east", "oblique-south", "oblique-west")
+
+
+def oblique_directions(wkt: str) -> list[str]:
+    """Angled-photo directions available in the newest capture (only the 'urban' layer has obliques)."""
+    def fetch():
+        r = _call("GET", "oriented/collections", params={"wkt": wkt, "srid": 4326, "layer": "urban",
+                                                         "product-type": "oblique",
+                                                         "include": "product-type,collection,last-capture-date"})
+        if r.status_code == 404:  # no oblique coverage here
+            return []
+        r.raise_for_status()
+        feats = r.json().get("features", [])
+        newest = max((f["properties"]["last-capture-date"] for f in feats), default=None)
+        have = {f["properties"]["product-type"] for f in feats if f["properties"]["last-capture-date"] == newest}
+        return [d for d in DIRECTIONS if d in have]
+
+    return cached("vexcel-oblique-dirs", {"wkt": wkt}, fetch)
+
+
+def oblique_jpeg(wkt: str, direction: str) -> bytes:
+    """Angled photo of the parcel (shows facades and storefront), parcel outlined in gold."""
+    def fetch():
+        r = _call("POST", "oriented/extract", json={
+            "wkt": wkt, "srid": 4326, "layer": "urban", "product-type": direction, "rotation": "natural",
+            "buffer-meter": 10, "crop": "bbox", "image-format": "jpeg/png",
+            # oriented/extract quirks (vexcel_quickstart.py): bare "r,g,b" colors and an explicit transparent fill
+            "drawing": [{"wkt": wkt, "outline-width": 4, "outline-color": "255,204,0",
+                         "fill-color": "255,204,0", "transparency": 0}]})
+        r.raise_for_status()
+        return base64.b64encode(r.content).decode()
+
+    return base64.b64decode(cached("vexcel-oblique", {"wkt": wkt, "direction": direction}, fetch))
+
+
 DETECTION_THRESHOLD = 0.3
 
 
@@ -115,4 +150,5 @@ def aerial(site_id: str, lat: float, lon: float) -> Aerial:
     """Parcel + image URL. Visibility and road access are filled in later by tools/vision.py."""
     p = parcel(lat, lon)
     return Aerial(parcelWkt=p["wkt"], collection=p["collection"], parkingSeen=estimate_spaces(p["wkt"], detect_parking(p["wkt"])),
-                  imageUrl=f"/api/sites/{site_id}/aerial.jpg")
+                  imageUrl=f"/api/sites/{site_id}/aerial.jpg",
+                  obliqueDirections=[d.removeprefix("oblique-") for d in oblique_directions(p["wkt"])])

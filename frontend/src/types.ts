@@ -18,6 +18,7 @@ export interface Aerial {
   collection: string | null
   parkingSeen: number | null // from parking rows in one photo; null = count unclear; display only, not in the odds
   imageUrl: string
+  obliqueDirections: string[] // angled photos at /api/sites/{id}/oblique/{dir}.jpg
 }
 
 export interface Room {

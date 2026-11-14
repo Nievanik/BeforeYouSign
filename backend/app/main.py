@@ -36,4 +36,17 @@ def aerial_jpg(site_id: str):
     return Response(vexcel.ortho_jpeg(wkt, vexcel.detect_parking(wkt)), media_type="image/jpeg")
 
 
+
+@api.get("/sites/{site_id}/oblique/{direction}.jpg")
+def oblique_jpg(site_id: str, direction: str):
+    if f"oblique-{direction}" not in vexcel.DIRECTIONS:
+        raise HTTPException(404, "unknown direction")
+    site = costar.get_site(site_id)
+    if not site:
+        raise HTTPException(404, "unknown site")
+    wkt = vexcel.parcel(site.lat, site.lon)["wkt"]
+    if f"oblique-{direction}" not in vexcel.oblique_directions(wkt):
+        raise HTTPException(404, "no angled photo from that direction here")
+    return Response(vexcel.oblique_jpeg(wkt, f"oblique-{direction}"), media_type="image/jpeg")
+
 app.include_router(api)

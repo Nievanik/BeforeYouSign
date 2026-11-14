@@ -10,3 +10,7 @@ body { font: 14px/1.4 system-ui, sans-serif; }
 .card img { width: 100%; border-radius: 4px; display: block; }
 .card figcaption { font-size: 12px; color: #444; margin-top: 4px; }
 @media (max-width: 600px) { .sites { top: auto; height: 45%; left: 16px; right: 16px; width: auto; } }
+.views { display: flex; gap: 4px; margin-bottom: 6px; flex-wrap: wrap; }
+.card button { font: inherit; font-size: 12px; padding: 4px 8px; border: 1px solid #bbb; border-radius: 4px; background: #f6f6f6; cursor: pointer; }
+.card button[aria-pressed='true'] { background: #222; color: #fff; border-color: #222; }
+.card .tour { width: 100%; aspect-ratio: 4 / 3; border: 0; border-radius: 4px; }
