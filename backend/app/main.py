@@ -13,6 +13,7 @@ from fastapi.sse import EventSourceResponse, ServerSentEvent
 from pydantic import BaseModel
 
 from app import config
+from app.agent.brief import parse_brief
 from app.agent.report import generate_report
 from app.agent.run import ranked, run_agent
 from app.cache import CacheMiss, cached
@@ -38,7 +39,7 @@ MAX_REPLAY_GAP_S = 2.0
 
 
 def parse_query_to_brief(query: str) -> BusinessBrief:
-    """Extract business brief from natural language query."""
+    """Rough keyword reading of the query: only used when the LLM parser (agent/brief.py) is unavailable."""
     q = query.lower()
 
     # Business type
@@ -75,13 +76,12 @@ def parse_query_to_brief(query: str) -> BusinessBrief:
         businessType=b_type,
         city=city,
         maxRentMonthly=rent,
-        sizeSqftMin=800,
-        sizeSqftMax=2500,
         mustHaves=must,
     )
 
 
-def work(run_id: str, req: AnalyzeRequest):
+def work(run_id: str, req: AnalyzeRequest, brief: BusinessBrief):
+    """req is what the user sent (the replay key); brief is the parsed one the agent works from."""
     rec = RUNS[run_id]
     key = {"query": req.query.strip().lower(), "brief": req.brief and req.brief.model_dump()}
     if config.OFFLINE:  # demo without Wi-Fi: replay a recorded live run, agent plan and all
@@ -97,7 +97,7 @@ def work(run_id: str, req: AnalyzeRequest):
         timed.append((round(time.monotonic() - started, 2), e, d))
 
     try:
-        run = run_agent(req.query, emit, req.brief)
+        run = run_agent(req.query, emit, brief)
         rec["result"] = RunResult(
             runId=run_id,
             brief=run.brief,
@@ -169,10 +169,15 @@ def analyze(req: AnalyzeRequest):
     if not req.query.strip() and not req.brief:
         raise HTTPException(400, "empty query")
 
-    brief = req.brief or parse_query_to_brief(req.query)
+    brief = req.brief
+    if not brief:
+        try:
+            brief = parse_brief(req.query)  # LLM: any business type, sizes only when the user gives them; cached
+        except Exception:  # OpenRouter down or rate-limited: rough keyword reading so the run still starts
+            brief = parse_query_to_brief(req.query)
     run_id = "r_" + secrets.token_hex(3)
     RUNS[run_id] = {"events": [], "result": None}
-    threading.Thread(target=work, args=(run_id, AnalyzeRequest(query=req.query, brief=brief)), daemon=True).start()
+    threading.Thread(target=work, args=(run_id, req, brief), daemon=True).start()
     return {"runId": run_id, "brief": brief}
 
 

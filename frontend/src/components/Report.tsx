@@ -1,4 +1,5 @@
 import type { RunResult, Site } from '../types'
+import AgentReport from './AgentReport'
 
 interface ReportProps {
   run: RunResult
@@ -89,6 +90,13 @@ export default function Report({ run, onClose }: ReportProps) {
                 </div>
               </div>
             </div>
+          )}
+
+          {run.report && (
+            <section className="report-section">
+              <h3>Analyst Agent's Recommendation</h3>
+              <AgentReport markdown={run.report} />
+            </section>
           )}
 
           {/* Comparative Ranking Table */}

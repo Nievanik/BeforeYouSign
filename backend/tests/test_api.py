@@ -10,6 +10,12 @@ client = TestClient(app)
 @pytest.fixture(autouse=True)
 def tmp_cache(tmp_path, monkeypatch):
     monkeypatch.setattr(cache, "CACHE_DIR", tmp_path)  # recorded runs must never land in the real cache
+    from app import main
+
+    def no_llm(q):
+        raise RuntimeError("no LLM in tests")
+
+    monkeypatch.setattr(main, "parse_brief", no_llm)  # tests use the keyword fallback unless they patch this
 
 
 def test_health():
@@ -115,3 +121,20 @@ def test_simulate_site_with_overrides():
         "overrides": {"rentMonthly": 2000, "ticket": 12.0}
     }).json()
     assert res2["pProfitableBy12"] >= res1["pProfitableBy12"]
+
+
+def test_analyze_uses_llm_brief_when_available(monkeypatch):
+    from app import main
+    from app.models import BusinessBrief
+
+    llm = BusinessBrief(businessType="nail salon", city="Houston", maxRentMonthly=4000)
+    monkeypatch.setattr(main, "parse_brief", lambda q: llm)
+    monkeypatch.setattr(main, "run_agent", lambda q, emit, brief=None: (_ for _ in ()).throw(RuntimeError("stop")))
+    data = client.post("/api/analyze", json={"query": "nail salon under 4k"}).json()
+    assert data["brief"]["businessType"] == "nail salon" and data["brief"]["sizeSqftMin"] is None
+
+
+def test_keyword_fallback_does_not_invent_sizes():
+    data = client.post("/api/analyze", json={"query": "Hair salon in Houston"}).json()
+    assert data["brief"]["businessType"] == "salon"
+    assert data["brief"]["sizeSqftMin"] is None and data["brief"]["sizeSqftMax"] is None

@@ -1391,3 +1391,14 @@ body { font: 14px/1.4 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", 
   .left-panel .sites { flex: 0 1 auto; max-height: 40%; }
   .agent-log-panel { max-height: 30%; }
 }
+
+/* agent's written recommendation (top of the site list, and in the printable report) */
+.agent-report-card { background: #fff; border-radius: 12px; padding: 10px 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border: 1px solid #e5e7eb; font-size: 13px; }
+.agent-report-card > summary { cursor: pointer; font-weight: 600; color: #1e3a8a; }
+.agent-report { line-height: 1.45; color: #1f2937; }
+.agent-report h4 { margin: 10px 0 4px; font-size: 14px; }
+.agent-report .agent-report-h1, .agent-report .agent-report-h2 { font-size: 15px; }
+.agent-report ul { margin: 4px 0; padding-left: 18px; }
+.agent-report p { margin: 6px 0; }
+.agent-report-table { border-collapse: collapse; width: 100%; font-size: 12px; margin: 6px 0; display: block; overflow-x: auto; }
+.agent-report-table th, .agent-report-table td { border: 1px solid #e5e7eb; padding: 3px 6px; text-align: left; }

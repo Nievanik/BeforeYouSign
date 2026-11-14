@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import AgentLogPanel, { type AgentStep } from './components/AgentLogPanel'
+import AgentReport from './components/AgentReport'
 import QueryBox from './components/QueryBox'
 import Report from './components/Report'
 import SiteCard from './components/SiteCard'
@@ -101,8 +102,16 @@ export default function App() {
         })
 
         sse.addEventListener('done', () => {
-          setLoading(false)
           sse.close()
+          // the stored result has the agent's final ranking (cards arrived in simulation order) and its report
+          fetch(`/api/runs/${runId}`)
+            .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
+            .then((final: RunResult) => {
+              setRun(final)
+              if (final.sites[0]) setSelectedSiteId(final.sites[0].id)
+            })
+            .catch(() => {}) // keep the streamed cards if the fetch fails (e.g. a fatal error left no result)
+            .finally(() => setLoading(false))
         })
 
         sse.addEventListener('error', (ev: MessageEvent) => {
@@ -123,6 +132,10 @@ export default function App() {
         setLoading(false)
       })
   }
+
+  // while streaming, order by odds so far (unsimulated last); once done, the server's ranked order is used as-is
+  const odds = (s: Site) => s.sim?.pProfitableBy12 ?? -1
+  const shownSites = loading && run ? [...run.sites].sort((a, b) => odds(b) - odds(a)) : (run?.sites ?? [])
 
   return (
     <div className="app-layout">
@@ -158,7 +171,13 @@ export default function App() {
                 Candidate Properties ({run.sites.length})
                 {loading && <span className="streaming-dot">● streaming…</span>}
               </div>
-              {run.sites.map((s, i) => (
+                {run.report && !loading && (
+                <details className="agent-report-card" open>
+                  <summary>Agent's recommendation</summary>
+                  <AgentReport markdown={run.report} />
+                </details>
+              )}
+              {shownSites.map((s, i) => (
                 <SiteCard key={s.id} site={s} rank={i + 1} />
               ))}
             </aside>
