@@ -1,10 +1,11 @@
 import json
 from pathlib import Path
 
-from fastapi import APIRouter, FastAPI, HTTPException
+from fastapi import APIRouter, FastAPI, HTTPException, Response
 
 from app import config
 from app.models import RunResult
+from app.tools import costar, vexcel
 
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures"
 
@@ -23,6 +24,15 @@ def get_run(run_id: str):
     if run_id != "golden":
         raise HTTPException(404, "unknown run")
     return json.loads((FIXTURES / "golden_run.json").read_text())
+
+
+@api.get("/sites/{site_id}/aerial.jpg")
+def aerial_jpg(site_id: str):
+    # the Vexcel key stays server-side; the browser only sees this proxy
+    site = costar.get_site(site_id)
+    if not site:
+        raise HTTPException(404, "unknown site")
+    return Response(vexcel.ortho_jpeg(vexcel.parcel(site.lat, site.lon)["wkt"]), media_type="image/jpeg")
 
 
 app.include_router(api)

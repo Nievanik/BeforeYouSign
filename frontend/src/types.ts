@@ -13,11 +13,11 @@ export interface Aerial {
   parcelWkt: string
   parkingSpaces: number
   carsSeen: number
-  visibilityScore: number
-  visibilityReason: string
-  roadAccessScore: number
-  roadAccessReason: string
-  collection: string
+  visibilityScore: number | null
+  visibilityReason: string | null
+  roadAccessScore: number | null
+  roadAccessReason: string | null
+  collection: string | null
   imageUrl: string
 }
 

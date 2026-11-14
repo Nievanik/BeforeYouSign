@@ -77,11 +77,13 @@ out center tags;
 
 Be polite: one query per site, cached, with a descriptive generic User-Agent.
 
+- Overpass reports timeouts as **HTTP 200 with a `remark`** and an empty list, so check `remark` before trusting "no results". Unscoped `name~` regexes time out: scope them to an amenity first.
+
 ## US Census
 
 - Tract from lat/lon: `https://geocoding.geo.census.gov/geocoder/geographies/coordinates?x={lon}&y={lat}&benchmark=Public_AR_Current&vintage=Current_Current&format=json`
 - ACS: `https://api.census.gov/data/2023/acs/acs5?get=B01003_001E,B19013_001E,B01002_001E&for=tract:{tract}&in=state:{st}+county:{co}`
-- No key needed at low volume.
+- The ACS API **now requires a key** (it redirects to `missing_key.html` without one). Free and instant: api.census.gov/data/key_signup.html → `CENSUS_API_KEY`. The geocoder still needs no key.
 
 ## LLM via OpenRouter (agent, vision, report)
 

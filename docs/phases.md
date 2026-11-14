@@ -3,13 +3,13 @@
 Tick boxes as you go (`[ ]` → `[x]`). Owners: **A** = backend/data, **B** = frontend/agent, **AB** = both together.
 Each phase ends with a **gate**: a concrete check that must pass before moving on. If a phase overruns by more than 30 min, apply the cut order at the bottom.
 
-**Status:** Phase 1 done (gate passes) · next: Phase 2 · last updated 2026-11-14
+**Status:** Phase 2 tools done (gate: `python -m scripts.phase2_gate`; demographics need a Census key) · next: Phase 3 · last updated 2026-11-14
 
 | # | Phase | Time | Owner | Status |
 |---|---|---|---|---|
 | 0 | Setup and design | before build day | AB | ✅ mostly done |
 | 1 | Contract and skeleton | 0:00–0:45 | AB | ✅ |
-| 2 | Data and tools | 0:45–4:00 | A (B: UI on fixture) | ⬜ |
+| 2 | Data and tools | 0:45–4:00 | A (B: UI on fixture) | ✅ (B UI pending) |
 | 3 | Simulation | 4:00–6:00 | A (B: charts) | ⬜ |
 | 4 | Agent | 4:00–7:30 | B | ⬜ |
 | 5 | Integration | 7:30–9:30 | AB | ⬜ |
@@ -48,16 +48,16 @@ Each phase ends with a **gate**: a concrete check that must pass before moving o
 Every tool: plain function → returns `models.py` types → cached. Test each one on 1 site.
 
 - [ ] **CoStar** (`tools/costar.py`)
-  - [ ] Load listings + properties once (only the columns needed)
-  - [ ] Candidate filter (active, lease, retail, city) + rent normalization + `rentMonthly` all-in estimate
-  - [ ] Join `MatterportModelId` from `commercial-properties.csv`, photo URL
-  - [ ] Workers nearby: `company-detail` employees within radius
-  - [ ] `tests/test_costar.py`: rent normalization (monthly/yearly, rate 0 → null)
-- [ ] **Census** (`tools/census.py`): geocoder → tract, population, land area, income
-- [ ] **OSM** (`tools/osm.py`): competitors by business type within radius (default attractiveness)
-- [ ] **Vexcel** (`tools/vexcel.py`): parcel (404 → square), ortho JPEG, `elements/detect` parking count, `/api/sites/{id}/aerial.jpg`
-- [ ] **Matterport** (`tools/matterport.py`): floor area, rooms, seat estimate, tour URL
-- [ ] **Vision** (`tools/vision.py`): OpenRouter model scores visibility + road access from the ortho (JSON)
+  - [x] Load listings once (the listing already has address, coordinates and photos; the property file isn't needed) (only the columns needed)
+  - [x] Candidate filter (active, lease, retail, city) + rent normalization + `rentMonthly` all-in estimate
+  - [x] Join `MatterportModelId` from `commercial-properties.csv`, photo URL
+  - [x] Workers nearby: `company-detail` employees within radius
+  - [x] `tests/test_tools.py`: rent normalization (monthly/yearly, rate 0 → null)
+- [x] **Census** (needs free `CENSUS_API_KEY`: the ACS API now requires one) (`tools/census.py`): geocoder → tract, population, land area, income
+- [x] **OSM** (`tools/osm.py`): competitors by business type within radius (default attractiveness)
+- [x] **Vexcel** (parking count is a lower bound, see `vexcel.py`) (`tools/vexcel.py`): parcel (404 → square), ortho JPEG, `elements/detect` parking count, `/api/sites/{id}/aerial.jpg`
+- [x] **Matterport** (`tools/matterport.py`): floor area, rooms, seat estimate, tour URL
+- [x] **Vision** (`tools/vision.py`): OpenRouter model scores visibility + road access from the ortho (JSON)
 
 **Meanwhile B:** query box, site cards, map markers, agent log panel, all from the fixture.
 

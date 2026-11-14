@@ -20,11 +20,11 @@ class Aerial(BaseModel):
     parcelWkt: str
     parkingSpaces: int
     carsSeen: int
-    visibilityScore: int  # 1-5
-    visibilityReason: str
-    roadAccessScore: int  # 1-5
-    roadAccessReason: str
-    collection: str
+    visibilityScore: Optional[int] = None  # 1-5, null until vision has run
+    visibilityReason: Optional[str] = None
+    roadAccessScore: Optional[int] = None  # 1-5
+    roadAccessReason: Optional[str] = None
+    collection: Optional[str] = None
     imageUrl: str
 
 
