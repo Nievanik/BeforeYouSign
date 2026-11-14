@@ -1,5 +1,6 @@
 import asyncio
 import json
+import re
 import secrets
 import threading
 import time
@@ -36,6 +37,16 @@ class AnalyzeRequest(BaseModel):
 
 
 MAX_REPLAY_GAP_S = 2.0
+DEMO_REPLAY_GAP_S = 0.3  # demo datasets replay quickly: they are for developing other features
+
+
+def demo_dataset(query: str) -> dict:
+    """The saved run for this query: hair salon, else restaurant (scripts/record_demo.py makes them)."""
+    name = "salon" if re.search(r"salon|hair|barber|beauty", query, re.I) else "restaurant"
+    path = config.DEMO_DIR / f"{name}.json"
+    if not path.exists():
+        raise HTTPException(503, f"demo dataset missing: run scripts/record_demo.py ({path.name})")
+    return json.loads(path.read_text())
 
 
 def parse_query_to_brief(query: str) -> BusinessBrief:
@@ -52,23 +63,20 @@ def parse_query_to_brief(query: str) -> BusinessBrief:
     # City
     city = "Los Angeles" if "los angeles" in q or "la" in q.split() else "Houston"
 
-    # Rent
+    # Size first ("1000 sq ft", "1000-1500 sqft"), so its numbers are not read as rent
+    size = re.search(r"(\d[\d,]*)\s*(?:(?:-|to)\s*(\d[\d,]*)\s*)?(?:sq\.?\s*f(?:ee)?t|sqft|square\s*f(?:ee|oo)t)", q)
+    num = lambda t: float(t.replace(",", "")) if t else None
+    size_min, size_max = (num(size.group(1)), num(size.group(2))) if size else (None, None)
+    rest = q[:size.start()] + q[size.end():] if size else q
+
+    # Rent: "$6k", "6.5k", or a number of at least 1,000
     rent = 6000.0
-    for raw in query.replace("$", " ").replace(",", "").split():
-        token = raw.strip().lower()
-        if token.endswith("k") and token[:-1].isdigit():
-            rent = float(int(token[:-1]) * 1000)
-            break
-        if token.isdigit():
-            value = int(token)
-            if value >= 1000:
-                rent = float(value)
-                break
+    m = re.search(r"(\d+(?:\.\d+)?)\s*k\b", rest) or re.search(r"\b(\d{1,3}(?:,\d{3})+|\d{4,})\b", rest)
+    if m:
+        rent = num(m.group(1)) * (1000 if m.group(0).rstrip().endswith("k") else 1)
 
     # Must-haves
     must = []
-    if "parking" in q:
-        must.append("parking")
     if "drive" in q or "transit" in q:
         must.append("transit access")
 
@@ -76,6 +84,9 @@ def parse_query_to_brief(query: str) -> BusinessBrief:
         businessType=b_type,
         city=city,
         maxRentMonthly=rent,
+        sizeSqftMin=size_min,
+        sizeSqftMax=size_max,
+        parkingRequired="parking" in q,
         mustHaves=must,
     )
 
@@ -114,10 +125,10 @@ def work(run_id: str, req: AnalyzeRequest, brief: BusinessBrief):
     emit("done", {"runId": run_id})
 
 
-def replay(run_id: str, rec: dict, recording: dict):
+def replay(run_id: str, rec: dict, recording: dict, max_gap: float | None = None):
     prev = 0.0
     for t, e, d in recording["events"]:
-        time.sleep(min(t - prev, MAX_REPLAY_GAP_S))
+        time.sleep(min(t - prev, MAX_REPLAY_GAP_S if max_gap is None else max_gap))
         prev = t
         rec["events"].append((e, d))
     rec["result"] = RunResult(**{**recording["result"], "runId": run_id})
@@ -169,6 +180,13 @@ def analyze(req: AnalyzeRequest):
     if not req.query.strip() and not req.brief:
         raise HTTPException(400, "empty query")
 
+    if config.DEMO:  # no LLM, no APIs: replay the saved dataset
+        recording = demo_dataset(req.query)
+        run_id = "r_" + secrets.token_hex(3)
+        RUNS[run_id] = {"events": [], "result": None}
+        threading.Thread(target=replay, args=(run_id, RUNS[run_id], recording, DEMO_REPLAY_GAP_S), daemon=True).start()
+        return {"runId": run_id, "brief": recording["result"]["brief"]}
+
     brief = req.brief
     if not brief:
         try:
@@ -216,6 +234,8 @@ def simulate_candidate(run_id: str, site_id: str):
 
 @api.get("/runs/{run_id}", response_model=RunResult)
 def get_run(run_id: str):
+    if run_id == "golden" and config.DEMO:  # the start screen shows the restaurant dataset
+        return RunResult(**{**demo_dataset("restaurant")["result"], "runId": "golden"})
     if run_id == "golden":
         run = RunResult(**json.loads((FIXTURES / "golden_run.json").read_text()))
         if not run.report or "placeholder" in run.report:

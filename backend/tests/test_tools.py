@@ -60,7 +60,7 @@ def test_parking_unclear_when_boxes_overlap_or_are_not_rows():
     assert vexcel.estimate_spaces(PARCEL, []) == 0
 
 
-def test_osm_falls_back_to_a_mirror(tmp_path, monkeypatch):
+def test_osm_uses_whichever_mirror_answers(tmp_path, monkeypatch):
     from app import cache, config
     monkeypatch.setattr(cache, "CACHE_DIR", tmp_path)
     monkeypatch.setattr(config, "OFFLINE", False)
@@ -68,7 +68,7 @@ def test_osm_falls_back_to_a_mirror(tmp_path, monkeypatch):
 
     def fake(method, url, **kw):
         tried.append(url)
-        if len(tried) == 1:
+        if url != osm.OVERPASS[2]:  # only one mirror is up
             raise ConnectionRefusedError("refused")
         return type("R", (), {"raise_for_status": lambda self: None,
                               "json": lambda self: {"elements": [{"lat": 29.76, "lon": -95.37,
@@ -76,4 +76,24 @@ def test_osm_falls_back_to_a_mirror(tmp_path, monkeypatch):
 
     monkeypatch.setattr(osm.http, "request", fake)
     found = osm.competitors(29.76, -95.37, "boba")
-    assert tried[:2] == osm.OVERPASS[:2] and [c.name for c in found] == ["Tea Bar"]
+    assert sorted(tried) == sorted(osm.OVERPASS) and [c.name for c in found] == ["Tea Bar"]
+
+
+def test_parking_required_keeps_only_sites_with_recorded_parking():
+    from app.models import BusinessBrief
+    from app.tools import costar
+
+    brief = BusinessBrief(businessType="boba", city="Houston", maxRentMonthly=20000)
+    every = costar.find_candidates(brief)
+    parked = costar.find_candidates(brief.model_copy(update={"parkingRequired": True}))
+    assert parked and all(s.parkingAvailable for s in parked)
+    assert len(parked) < len(every)
+
+
+def test_any_business_type_gets_competitor_filters():
+    from app import config
+    assert osm.tags_for("restaurant") == config.OSM_TAGS["fast_casual"]
+    assert osm.tags_for("Fast_Food") == config.OSM_TAGS["fast_casual"]
+    bakery = osm.tags_for('bakery"];out;')  # LLM text never breaks out of the query
+    assert bakery["competitor"][0] == '["amenity"="bakeryout"]'
+    assert osm.matches(osm.tags_for("bakery")["competitor"][1], {"shop": "bakery"})

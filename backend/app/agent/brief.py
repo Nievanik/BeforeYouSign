@@ -11,7 +11,8 @@ Reply with ONLY JSON:
   "city": "Houston" or "Los Angeles" (default "Houston"),
   "maxRentMonthly": <number, US dollars per month; 6000 if not given>,
   "sizeSqftMin": <number or null>, "sizeSqftMax": <number or null>,
-  "mustHaves": [<short phrases such as "parking", "corner lot">]}}"""
+  "parkingRequired": <true only if the request says parking is needed or a must, else false>,
+  "mustHaves": [<other short requirements such as "corner lot", "drive-thru">]}}"""
 
 PROFILE_PROMPT = """Give typical small-business numbers for a new "{kind}" in a US city. Reply with ONLY JSON with
 these numeric keys: {fields}.

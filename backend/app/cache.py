@@ -6,7 +6,7 @@ from typing import Any, Callable
 
 from app import config
 
-CACHE_DIR = Path(__file__).resolve().parents[1] / "cache"
+CACHE_DIR = config.DEMO_DIR / "cache" if config.DEMO else Path(__file__).resolve().parents[1] / "cache"
 
 
 class CacheMiss(Exception):

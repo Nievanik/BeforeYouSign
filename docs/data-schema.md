@@ -10,6 +10,7 @@ Our internal models (Pydantic in `backend/app/models.py`, mirrored in `frontend/
 | `city` | `"Houston"` \| `"Los Angeles"` | `"Houston"` | parsed |
 | `maxRentMonthly` | float | `6000` | parsed |
 | `sizeSqftMin` / `sizeSqftMax` | float? | `800` / `2000` | parsed, or default per business type |
+| `parkingRequired` | bool | `true` | parsed ("needs parking"); when true, only sites with parking recorded in CoStar |
 | `mustHaves` | list[str] | `["parking"]` | parsed |
 
 ## Site
@@ -28,6 +29,8 @@ One candidate space.
 | `rentPsfYear` | float? | normalized |
 | `serviceType` | str | space `serviceType` → enum name (TripleNet, FullService…) |
 | `spaceUse` | str | space `spaceUse` → enum name (Retail, OfficeRetail…) |
+| `parkingAvailable` / `parkingSpaces` / `parkingTypes` | bool? / int? / str[] | `commercial-property.parking` (null = not recorded; spaces summed over types) |
+| `buildingClass` / `yearBuilt` | str? / int? | `commercial-property.buildingClass` (A/B/C/F), earliest "built" construction event |
 | `photoUrl` | str? | property `primaryPhoto.attachmentUri` (swap `/112/` → `/113/` for 1,400 px) |
 | `matterportModelId` | str? | `commercial-properties.csv` on `PropertyId` |
 | `aerial` | Aerial? | Vexcel |
@@ -48,7 +51,7 @@ Keep `serviceType`: TripleNet rent excludes taxes, insurance and CAM, so add `co
 
 ### Candidate filter (CoStar)
 
-`listingStatus == 1` (Active) · `listingType` is a lease type, not 19 (Sublease) · `spaceUse in {5 Retail, 3 OfficeRetail}` **or** property is GeneralRetail · property city = brief city · `rentMonthly <= maxRentMonthly` · size in range.
+`listingStatus == 1` (Active) · `listingType` is a lease type, not 19 (Sublease) · `spaceUse in {5 Retail, 3 OfficeRetail}` **or** property is GeneralRetail · property city = brief city · `rentMonthly <= maxRentMonthly` · size in range · parking recorded, if `parkingRequired`.
 
 ## Aerial (Vexcel)
 
@@ -87,6 +90,7 @@ Floor plan image: `/api/sites/{id}/floorplan.jpg`, from `assets.floorplans` (jpg
 | `reviewCount` | int? | Yelp `review_count` |
 | `isNew` | bool | in Yelp `attributes=hot_and_new` results |
 | `attractiveness` | float | `(rating/4)^2 × log(1+reviewCount)`; defaults 4.0★ / 20 reviews if no Yelp match (see simulation.md) |
+| `address` | str? | OSM `addr:housenumber` + `addr:street`, if tagged |
 | `source` | `"yelp"` \| `"osm"` | |
 
 **Primary source: Yelp.** OSM is the fallback when Yelp fails or the trial runs out. De-duplicate OSM against Yelp by name + distance < 50 m.

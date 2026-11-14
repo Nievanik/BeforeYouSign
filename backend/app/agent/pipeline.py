@@ -229,7 +229,11 @@ def finish(run) -> None:
     if not run.sites:
         tools["find_candidates"]()
     todo = sorted((s for s in run.sites.values() if not s.sim), key=lambda s: s.rentMonthly or 0)
-    for s in todo[: max(0, TOP - sum(1 for s in run.sites.values() if s.sim))]:
+    todo = todo[: max(0, TOP - sum(1 for s in run.sites.values() if s.sim))]
+    if todo:  # show the picks before their simulations run, as the agent does
+        picks = [s.id for s in run.sites.values() if s.sim] + [s.id for s in todo]
+        run.emit("ranking", {"siteIds": picks, "reason": "auto mode: the cheapest candidates"})
+    for s in todo:
         tools["simulate"](s.id)
     done = sorted((s for s in run.sites.values() if s.sim), key=lambda s: s.sim.pProfitableBy12, reverse=True)
     run.ranking = [s.id for s in done]

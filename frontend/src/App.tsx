@@ -7,6 +7,8 @@ import SiteCard from './components/SiteCard'
 import SiteMap from './components/SiteMap'
 import type { BusinessBrief, RunResult, Site } from './types'
 
+const TOP = 3 // matches backend agent/run.py TOP
+
 export default function App() {
   const [run, setRun] = useState<RunResult | null>(null)
   const [error, setError] = useState('')
@@ -14,6 +16,7 @@ export default function App() {
   const [loading, setLoading] = useState(false)
   const [steps, setSteps] = useState<AgentStep[]>([])
   const [showReport, setShowReport] = useState(false)
+  const [picks, setPicks] = useState<string[]>([]) // the agent's top picks, sent before their simulations
 
   // Load initial golden fixture on start
   useEffect(() => {
@@ -21,9 +24,6 @@ export default function App() {
       .then((r) => (r.ok ? r.json() : Promise.reject(`backend returned ${r.status}`)))
       .then((data: RunResult) => {
         setRun(data)
-        if (data.sites?.length > 0) {
-          setSelectedSiteId(data.sites[0].id)
-        }
       })
       .catch((e) => setError(`Could not load run: ${e}`))
   }, [])
@@ -33,6 +33,7 @@ export default function App() {
     setLoading(true)
     setError('')
     setSteps([])
+    setPicks([])
 
     fetch('/api/analyze', {
       method: 'POST',
@@ -84,7 +85,10 @@ export default function App() {
                 : [...prev.sites, newSite]
             return { ...prev, sites: updatedSites }
           })
-          setSelectedSiteId(newSite.id)
+        })
+
+        sse.addEventListener('ranking', (ev) => {
+          setPicks((JSON.parse(ev.data) as { siteIds: string[] }).siteIds)
         })
 
         sse.addEventListener('sim', (ev) => {
@@ -108,7 +112,6 @@ export default function App() {
             .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
             .then((final: RunResult) => {
               setRun(final)
-              if (final.sites[0]) setSelectedSiteId(final.sites[0].id)
             })
             .catch(() => {}) // keep the streamed cards if the fetch fails (e.g. a fatal error left no result)
             .finally(() => setLoading(false))
@@ -155,8 +158,13 @@ export default function App() {
   }
 
   // while streaming, order by odds so far (unsimulated last); once done, the server's ranked order is used as-is
-  const odds = (s: Site) => s.sim?.pProfitableBy12 ?? -1
-  const shownSites = loading && run ? [...run.sites].sort((a, b) => odds(b) - odds(a)) : (run?.sites ?? [])
+  // while the agent works: its picks as soon as it ranks them, before that every candidate as it arrives
+  const sites = run?.sites ?? []
+  const picked = picks.flatMap((id) => sites.filter((s) => s.id === id))
+  const ranked = !loading ? sites : picked.length ? [...picked, ...sites.filter((s) => !picks.includes(s.id))] : sites
+  const shownSites = loading && !picked.length ? ranked : ranked.slice(0, loading ? picked.length : TOP)
+  const otherSites = ranked.slice(shownSites.length)
+  const simulatingNow = (s: Site) => loading && picks.includes(s.id) && !s.sim
 
   return (
     <div className="app-layout">
@@ -182,20 +190,15 @@ export default function App() {
 
       {/* Map, ranked site cards (fill in live as sites finish), agent log */}
       <main className="main-content">
-        <SiteMap sites={run?.sites ?? []} selectedSiteId={selectedSiteId} onSelectSite={setSelectedSiteId} />
+        <SiteMap sites={shownSites} selectedSiteId={selectedSiteId} onSelectSite={setSelectedSiteId} />
         {/* one left column, so the site list always starts below the query box, whatever its height */}
         <div className="left-panel no-print">
           <QueryBox brief={run?.brief} onSearch={handleSearch} loading={loading} />
           {run && (
             <aside className="sites">
               <div className="sites-header">
-                Candidate Properties ({run.sites.length})
+                {loading && !picked.length ? `Finding locations (${run.sites.length})` : `Top ${shownSites.length} Picks`}
                 {loading && <span className="streaming-dot">● streaming…</span>}
-                {unsimulated.length > 0 && (
-                  <button type="button" className="simulate-btn" onClick={simulateRemaining} disabled={simulatingAll}>
-                    {simulatingAll ? 'Simulating…' : `Simulate remaining ${unsimulated.length}`}
-                  </button>
-                )}
               </div>
                 {run.report && !loading && (
                 <details className="agent-report-card" open>
@@ -208,9 +211,30 @@ export default function App() {
                   key={s.id}
                   site={s}
                   rank={i + 1}
+                  selected={s.id === selectedSiteId}
+                  onSelect={() => setSelectedSiteId(s.id)}
+                  simulatingNow={simulatingNow(s)}
                   onSimulate={!s.sim && unsimulated.includes(s) ? () => simulateSite(s.id) : undefined}
                 />
               ))}
+              {otherSites.length > 0 && (
+                <details className="agent-report-card">
+                  <summary>Other candidates ({otherSites.length})</summary>
+                  {unsimulated.length > 0 && (
+                    <button type="button" className="simulate-btn" onClick={simulateRemaining} disabled={simulatingAll}>
+                      {simulatingAll ? 'Simulating…' : `Simulate remaining ${unsimulated.length}`}
+                    </button>
+                  )}
+                  {otherSites.map((s, i) => (
+                    <SiteCard
+                      key={s.id}
+                      site={s}
+                      rank={TOP + i + 1}
+                      onSimulate={!s.sim && unsimulated.includes(s) ? () => simulateSite(s.id) : undefined}
+                    />
+                  ))}
+                </details>
+              )}
             </aside>
           )}
         </div>

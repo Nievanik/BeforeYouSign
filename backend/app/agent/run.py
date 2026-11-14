@@ -4,6 +4,7 @@ emit(event, data) receives every event in docs/api.md: brief, plan, step, site, 
 """
 import json
 import time
+from concurrent.futures import ThreadPoolExecutor
 from typing import Callable
 
 from deepagents import create_deep_agent
@@ -25,8 +26,10 @@ Tools return short text; site ids look like "L123-S4". Work like this, and say W
 before each tool call:
 1. Plan first with write_todos.
 2. find_candidates. If it reports fewer than {thin} sites, call relax_constraint ONCE (rent or size), say which and why.
-3. Pick the {top} most promising sites from the list (rent well under the limit, size that fits, more workers
-   nearby) and say why in one sentence. Run simulate on those {top} ONLY: each simulation is slow. The user can
+3. Rank all candidates using what find_candidates reports: rent well under the limit, size that fits, parking
+   (required if the brief says parkingRequired), more people and workers nearby, fewer competitors, more complements.
+   Pick the {top} best and call rank with their ids, best first, and a one-sentence reason: the user sees your
+   picks right away. Then run simulate on those {top} ONLY: each simulation is slow. The user can
    simulate the others later, so do not simulate them.
    people_nearby and competitors give more detail: use them only when investigating a site.
 4. Run inspect_aerial and inspect_interior on your {top} simulated sites (expensive).
@@ -36,6 +39,19 @@ before each tool call:
 6. Call finish with the ranking of your simulated sites (best first) and a short report that cites numbers for
    each pick and names the other candidates as "not simulated yet".
 You have at most {max_calls} tool calls in total, so do not repeat calls."""
+
+
+def _summary(s: Site, radius: float, workers: int) -> str:
+    """One line per candidate: everything the agent ranks on."""
+    d, kinds = s.demographics, [c.kind for c in s.competitors]
+    parking = "parking not recorded"
+    if s.parkingAvailable:
+        parking = f"parking {s.parkingSpaces} spaces" if s.parkingSpaces else "parking yes"
+    people = f"tract population {d.population:,} ({d.densityPerSqMi or 0:,.0f}/sq mi)" if d else "population unknown"
+    gaps = f" (gaps: {'; '.join(s.gaps)})" if s.gaps else ""
+    return (f"{s.id}: {s.address}, ${s.rentMonthly:,.0f}/mo, {s.sizeSqft:,.0f} sq ft, {parking}, {people}, "
+            f"{workers:,} workers, {kinds.count('competitor')} competitors and {kinds.count('complement')} "
+            f"complements within {radius} mi{gaps}")
 
 
 class OverBudget(Exception):
@@ -84,13 +100,17 @@ class Run:
             raise ValueError(f"unknown site id {site_id!r}; use ids from find_candidates")
         return self.sites[site_id]
 
-    def run_sim(self, s: Site, overrides: dict | None = None):
+    def gather(self, s: Site) -> None:
+        """Census and competitors/complements for one site, once; a failure becomes a gap."""
         if s.demographics is None and not any(g.startswith("no demographics") for g in s.gaps):
             s.demographics = attempt(s, "no demographics", lambda: census.demographics(s.lat, s.lon))
         if not s.competitors and not any(g.startswith("no competitors") for g in s.gaps):
             s.competitors = attempt(s, "no competitors",
                                     lambda: osm.competitors(s.lat, s.lon, self.brief.businessType,
                                                             self.profile["radiusMi"])) or []
+
+    def run_sim(self, s: Site, overrides: dict | None = None):
+        self.gather(s)
         return sim.simulate(s, self.profile, overrides)
 
     # --- tools (each returns short text for the model) ------------------------------------------------
@@ -108,9 +128,12 @@ class Run:
                         props.add(s.propertyId)
                 # a repeat search keeps already-gathered evidence (sims, aerials) for sites it finds again
                 run.sites = {s.id: run.sites.get(s.id, s) for s in picked[:SHORTLIST]}
+                for s in run.sites.values():  # cards and map pins appear now, before the slower lookups
+                    run.emit("site", s.model_dump())
+                with ThreadPoolExecutor(3) as pool:  # Census + one OSM query per site; 3 at a time spares Overpass
+                    list(pool.map(run.gather, run.sites.values()))
                 r = run.profile["radiusMi"]
-                lines = [f"{s.id}: {s.address}, ${s.rentMonthly:,.0f}/mo, {s.sizeSqft:,.0f} sq ft, "
-                         f"{costar.workers_nearby(s.lat, s.lon, r, run.brief.city):,} workers within {r} mi"
+                lines = [_summary(s, r, costar.workers_nearby(s.lat, s.lon, r, run.brief.city))
                          for s in run.sites.values()]
                 for s in run.sites.values():  # cards and map pins appear now; odds come once a site is simulated
                     run.emit("site", s.model_dump())
@@ -204,13 +227,24 @@ class Run:
                 return f"{s.address}: {i.floorAreaSqft:,.0f} sq ft scanned, ~{i.estSeats} seats. {i.summary or ''}"
             return run.step("matterport", f"Opening the 3D scan of {site_id}", site_id, go)
 
+        def rank(site_ids: list[str], reason: str) -> str:
+            """Announce your top picks (ids best first) before simulating, so the user sees them right away."""
+            def go():
+                ids = [i for i in site_ids if i in run.sites]
+                if not ids:
+                    raise ValueError("no known site ids; use ids from find_candidates")
+                run.ranking = ids
+                run.emit("ranking", {"siteIds": ids, "reason": reason})
+                return f"Shown to the user: {', '.join(ids)}. Now simulate them."
+            return run.step("rank", f"Ranked top picks: {reason}"[:200], None, go)
+
         def finish(ranking: list[str], report: str) -> str:
             """Final answer: site ids best first, and a short markdown report citing numbers for each pick."""
             run.ranking = [i for i in ranking if i in run.sites]
             run.report = report
             return "Done. Stop now."
 
-        return [find_candidates, relax_constraint, people_nearby, competitors, simulate,
+        return [find_candidates, relax_constraint, rank, people_nearby, competitors, simulate,
                 inspect_aerial, inspect_interior, finish]
 
 

@@ -54,6 +54,19 @@ The frontend proxies `/api/*` to `http://localhost:8000` via Vite config.
 
 ---
 
+## 🧪 Demo mode (no API calls)
+
+For developing without calling the APIs again and again. Two saved datasets: **restaurant** and **hair salon**
+(8 CoStar candidates each, all simulated, with Census, competitors, aerial photos, 3D-scan floor plans and the agent's report).
+
+```bash
+cd backend && .venv/bin/python -m scripts.record_demo   # once, online: records backend/demo_data/ (local, not in git)
+DEMO=1 .venv/bin/uvicorn app.main:app --reload          # Analyze replays a dataset; nothing calls an API
+```
+
+A query mentioning salon / hair / barber / beauty gets the salon dataset; anything else gets the restaurant one.
+What-if levers and "simulate" still work (they run locally on the saved data).
+
 ## 🏗️ Tech Stack
 
 | Layer | Technology |

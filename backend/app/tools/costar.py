@@ -31,6 +31,27 @@ def _matterport_ids() -> dict[int, str]:
 
 
 @lru_cache
+def _properties() -> dict[int, dict]:
+    """Parking and building facts per propertyId (commercial-property.jsonl)."""
+    kinds = _enums()["ParkingType"]
+    out = {}
+    with open(config.COSTAR_DIR / "data" / "commercial-property.jsonl") as f:
+        for line in f:
+            d = json.loads(line)
+            park = d.get("parking") or []
+            spaces = sum(p.get("totalSpaces") or 0 for p in park)
+            built = [e["year"] for e in d.get("constructionEvents") or [] if e.get("eventType") == 2 and e.get("year")]
+            out[d["id"]] = dict(
+                parkingAvailable=True if park else None,  # an empty list means "not recorded", not "none"
+                parkingSpaces=spaces or None,
+                parkingTypes=sorted({kinds.get(str(p.get("parkingType")), "Unknown") for p in park} - {"Unknown"}),
+                buildingClass={1: "A", 2: "B", 3: "C", 4: "F"}.get(d.get("buildingClass")),
+                yearBuilt=min(built) if built else None,
+            )
+    return out
+
+
+@lru_cache
 def _workers(state: str) -> list[tuple[float, float, int]]:
     """(lat, lon, employees) for every company location in the state."""
     out = []
@@ -80,6 +101,9 @@ def find_candidates(brief: BusinessBrief) -> list[Site]:
             size = sp.get("squareFeetMax") or 0
             if (brief.sizeSqftMin and size < brief.sizeSqftMin) or (brief.sizeSqftMax and size > brief.sizeSqftMax):
                 continue
+            facts = _properties().get(lst["propertyId"], {})
+            if brief.parkingRequired and not facts.get("parkingAvailable"):
+                continue
             rent, psf = normalize_rent(sp)
             if rent is not None and rent > brief.maxRentMonthly:
                 continue
@@ -91,6 +115,8 @@ def find_candidates(brief: BusinessBrief) -> list[Site]:
             model_id = mp.get(lst["propertyId"])
             if not model_id:
                 gaps.append("no 3D scan")
+            if not facts.get("parkingAvailable"):
+                gaps.append("parking not recorded")
             sites.append(Site(
                 id=f"L{lst['id']}-S{sp['id']}",
                 listingId=lst["id"],
@@ -106,6 +132,7 @@ def find_candidates(brief: BusinessBrief) -> list[Site]:
                 photoUrl=_photo(lst),
                 matterportModelId=model_id,
                 gaps=gaps,
+                **facts,
             ))
     return sites
 

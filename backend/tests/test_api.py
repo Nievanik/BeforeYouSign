@@ -155,3 +155,31 @@ def test_simulate_a_candidate_the_agent_skipped():
     assert client.get("/api/runs/r_test").json()["sites"][2]["sim"] is not None  # stored, survives a reload
     assert client.post("/api/runs/r_test/sites/nope/simulate").status_code == 404
     assert client.post("/api/runs/nope/sites/x/simulate").status_code == 404
+
+
+def test_keyword_fallback_reads_size_rent_and_parking():
+    from app.main import parse_query_to_brief
+
+    b = parse_query_to_brief("Boba shop in Houston, max $6k/month rent, at least 1000 sq ft, needs parking")
+    assert (b.maxRentMonthly, b.sizeSqftMin, b.parkingRequired) == (6000, 1000, True)
+    b = parse_query_to_brief("Hair salon, max $5,500/month, 1000-1500 sq ft")
+    assert (b.maxRentMonthly, b.sizeSqftMin, b.sizeSqftMax, b.parkingRequired) == (5500, 1000, 1500, False)
+
+
+def test_demo_mode_replays_the_matching_dataset(monkeypatch, tmp_path):
+    import json
+    from app import config, main
+    from app.models import BusinessBrief
+
+    for name, kind in (("salon", "salon"), ("restaurant", "restaurant")):
+        brief = BusinessBrief(businessType=kind, city="Houston", maxRentMonthly=5000).model_dump()
+        (tmp_path / f"{name}.json").write_text(json.dumps({"events": [[0, "brief", brief]], "result": {
+            "runId": name, "brief": brief, "sites": [], "report": "", "createdAt": "x"}}))
+    monkeypatch.setattr(config, "DEMO", True)
+    monkeypatch.setattr(config, "DEMO_DIR", tmp_path)
+    monkeypatch.setattr(main, "run_agent", lambda *a, **k: 1 / 0)  # the agent must not run
+    monkeypatch.setattr(main, "parse_brief", lambda q: 1 / 0)  # nor the LLM parser
+    assert main.demo_dataset("Hair salon in Houston")["result"]["brief"]["businessType"] == "salon"
+    assert main.demo_dataset("a pizza place")["result"]["brief"]["businessType"] == "restaurant"
+    r = client.post("/api/analyze", json={"query": "barber shop"})
+    assert r.status_code == 202 and r.json()["brief"]["businessType"] == "salon"

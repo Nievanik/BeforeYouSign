@@ -13,6 +13,7 @@ class BusinessBrief(BaseModel):
     maxRentMonthly: float
     sizeSqftMin: Optional[float] = None
     sizeSqftMax: Optional[float] = None
+    parkingRequired: bool = False
     mustHaves: list[str] = []
 
 
@@ -53,6 +54,7 @@ class Competitor(BaseModel):
     reviewCount: Optional[int] = None
     isNew: bool = False
     attractiveness: float
+    address: Optional[str] = None
     source: Literal["yelp", "osm"]
 
 
@@ -115,6 +117,11 @@ class Site(BaseModel):
     rentPsfYear: Optional[float] = None
     serviceType: str
     spaceUse: str
+    parkingAvailable: Optional[bool] = None  # CoStar property record; None = not recorded
+    parkingSpaces: Optional[int] = None
+    parkingTypes: list[str] = []  # e.g. "Surface", "Covered"
+    buildingClass: Optional[str] = None  # A/B/C/F
+    yearBuilt: Optional[int] = None
     photoUrl: Optional[str] = None
     matterportModelId: Optional[str] = None
     aerial: Optional[Aerial] = None

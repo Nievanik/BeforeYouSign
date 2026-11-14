@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { SimResult, Site } from '../types'
 import AssumptionsPanel from './AssumptionsPanel'
 import ProfitFan from './ProfitFan'
@@ -14,6 +14,12 @@ function parkingText(site: Site): string {
   return a.parkingSeen != null
     ? `About ${a.parkingSeen} spaces on the lot (estimated from ${photo}; may be shared with other tenants)`
     : `Parking areas outlined on the photo; count unclear from ${photo}`
+}
+
+function parkingLabel(site: Site): string {
+  if (!site.parkingAvailable) return 'Parking not recorded'
+  const kinds = site.parkingTypes.length ? ` (${site.parkingTypes.join(', ').toLowerCase()})` : ''
+  return site.parkingSpaces ? `Parking: ${site.parkingSpaces.toLocaleString()} spaces${kinds}` : `Parking: yes${kinds}`
 }
 
 function oddsColor(odds: number): string {
@@ -34,12 +40,22 @@ export default function SiteCard({
   site,
   rank,
   onSimulate,
+  selected = false,
+  onSelect,
+  simulatingNow = false,
 }: {
   site: Site
   rank: number
+  selected?: boolean
+  onSelect?: () => void
+  simulatingNow?: boolean // the agent picked this site and its simulation is running
   onSimulate?: () => Promise<void> // set for candidates the agent did not simulate
 }) {
   const a = site.aerial
+  const ref = useRef<HTMLElement>(null)
+  useEffect(() => {
+    if (selected) ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }, [selected])
   const [view, setView] = useState('above') // "above" or an oblique direction
   const [showChart, setShowChart] = useState(true)
   const [showAssumptions, setShowAssumptions] = useState(false)
@@ -61,12 +77,12 @@ export default function SiteCard({
   const src = view === 'above' ? a?.imageUrl : `/api/sites/${site.id}/oblique/${view}.jpg`
 
   return (
-    <article className="card">
+    <article ref={ref} className={`card ${selected ? 'is-selected' : ''}`} onClick={onSelect}>
       <div className="card-header">
         <h2>
           #{rank} {site.address}
         </h2>
-        <button
+        {site.sim && <button
           type="button"
           className={`assumptions-btn ${overrideSim ? 'has-overrides' : ''}`}
           onClick={() => setShowAssumptions(!showAssumptions)}
@@ -75,7 +91,7 @@ export default function SiteCard({
         >
           ⚙️ {showAssumptions ? 'Close Levers' : 'What-If Levers'}
           {overrideSim && <span className="override-indicator">Active</span>}
-        </button>
+        </button>}
       </div>
 
       {/* Visual Odds Bar & Headline */}
@@ -118,6 +134,16 @@ export default function SiteCard({
             {currentSim.rentShare != null && (
               <span className="badge">Rent: {Math.round(currentSim.rentShare * 100)}% of rev</span>
             )}
+          </div>
+        </div>
+      ) : simulatingNow ? (
+        <div className="sim-running" role="status">
+          <span className="sim-spinner" aria-hidden="true" />
+          <div>
+            <strong>Simulation running…</strong>
+            <br />
+            Playing out 1,000 possible futures over 36 months to predict your odds of profit by month 12,
+            break-even customers and payback. Results and graphs appear here when it finishes.
           </div>
         </div>
       ) : (
@@ -163,6 +189,32 @@ export default function SiteCard({
           </>
         )}
       </div>
+
+      {/* Parking, building and neighborhood facts */}
+      <ul className="facts-row">
+        <li className={site.parkingAvailable ? 'fact-yes' : 'fact-unknown'}>{parkingLabel(site)}</li>
+        {(site.buildingClass || site.yearBuilt) && (
+          <li>
+            {site.buildingClass && `Class ${site.buildingClass} building`}
+            {site.buildingClass && site.yearBuilt && ', '}
+            {site.yearBuilt && `built ${site.yearBuilt}`}
+          </li>
+        )}
+        <li>{site.spaceUse}</li>
+        {site.demographics && (
+          <li>
+            {site.demographics.population.toLocaleString()} residents in tract
+            {site.demographics.medianIncome != null &&
+              ` · median income $${Math.round(site.demographics.medianIncome).toLocaleString()}`}
+          </li>
+        )}
+        {site.competitors.length > 0 && (
+          <li>
+            {site.competitors.filter((c) => c.kind === 'competitor').length} competitors ·{' '}
+            {site.competitors.filter((c) => c.kind === 'complement').length} complements nearby
+          </li>
+        )}
+      </ul>
 
       {/* Profit Fan Chart toggle */}
       {currentSim && currentSim.monthlyBands && (

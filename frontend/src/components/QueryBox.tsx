@@ -48,6 +48,10 @@ export default function QueryBox({ brief, onSearch, loading = false }: QueryBoxP
           <span className="chip chip-type">Type: {brief.businessType}</span>
           <span className="chip chip-city">City: {brief.city}</span>
           <span className="chip chip-rent">Max Rent: ${brief.maxRentMonthly.toLocaleString()}/mo</span>
+          {brief.sizeSqftMin != null && (
+            <span className="chip">Min Size: {brief.sizeSqftMin.toLocaleString()} sq ft</span>
+          )}
+          {brief.parkingRequired && <span className="chip chip-must">Must: parking</span>}
           {brief.mustHaves?.map((m) => (
             <span key={m} className="chip chip-must">Must: {m}</span>
           ))}

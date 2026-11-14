@@ -1407,3 +1407,67 @@ body { font: 14px/1.4 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", 
 .simulate-btn { margin-left: 8px; padding: 4px 10px; font-size: 12px; font-weight: 600; text-transform: none; letter-spacing: 0; color: #fff; background: #2563eb; border: 0; border-radius: 6px; cursor: pointer; }
 .simulate-btn:disabled { opacity: 0.6; cursor: wait; }
 .sim-error { display: block; margin-top: 4px; color: #b91c1c; font-size: 12px; }
+
+/* i1: selected card, facts row */
+.card.is-selected {
+  outline: 2px solid #0284c7;
+  outline-offset: -2px;
+}
+.facts-row {
+  list-style: none;
+  margin: 6px 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 6px;
+  font-size: 12px;
+}
+.facts-row li {
+  background: #f1f5f9;
+  border-radius: 10px;
+  padding: 2px 8px;
+}
+.facts-row .fact-yes {
+  background: #dcfce7;
+  color: #166534;
+}
+.facts-row .fact-unknown {
+  background: #fef3c7;
+  color: #92400e;
+}
+.card {
+  scroll-margin-top: 8px;
+}
+
+/* i2: simulation running placeholder */
+.sim-running {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  background: #eff6ff;
+  color: #1e3a8a;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 12.5px;
+  line-height: 1.45;
+}
+.sim-spinner {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  border: 2px solid #bfdbfe;
+  border-top-color: #2563eb;
+  border-radius: 50%;
+  animation: sim-spin 0.8s linear infinite;
+}
+@keyframes sim-spin {
+  to { transform: rotate(360deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sim-spinner { animation: none; }
+}
+.legend-note {
+  color: #b45309;
+  font-size: 11px;
+}

@@ -7,6 +7,16 @@ import type { Competitor, Site } from '../types'
 maplibregl.setWorkerUrl(workerUrl)
 
 const HOUSTON: [number, number] = [-95.3698, 29.7604]
+
+function milesBetween(a: { lat: number; lon: number }, b: { lat: number; lon: number }): number {
+  const r = Math.PI / 180
+  const h =
+    Math.sin(((b.lat - a.lat) * r) / 2) ** 2 +
+    Math.cos(a.lat * r) * Math.cos(b.lat * r) * Math.sin(((b.lon - a.lon) * r) / 2) ** 2
+  return 3958.8 * 2 * Math.asin(Math.sqrt(h))
+}
+
+const esc = (t: string) => t.replace(/[&<>"]/g, (c) => `&#${c.charCodeAt(0)};`)
 interface SiteMapProps {
   sites: Site[]
   selectedSiteId?: string
@@ -18,6 +28,10 @@ export default function SiteMap({ sites, selectedSiteId, onSelectSite }: SiteMap
   const map = useRef<maplibregl.Map | null>(null)
   const [showCompetitors, setShowCompetitors] = useState(true)
   const [showComplements, setShowComplements] = useState(true)
+  const sitePins = useRef(new Map<string, HTMLElement>())
+  const fittedKey = useRef('')
+  const selectedRef = useRef(selectedSiteId)
+  selectedRef.current = selectedSiteId // redrawn pins read the current selection
 
   // Initialize Map
   useEffect(() => {
@@ -46,7 +60,8 @@ export default function SiteMap({ sites, selectedSiteId, onSelectSite }: SiteMap
       bounds.extend([s.lon, s.lat])
 
       const markerEl = document.createElement('div')
-      markerEl.className = `site-pin rank-${i + 1} ${selectedSiteId === s.id ? 'is-selected' : ''}`
+      markerEl.className = `site-pin rank-${i + 1} ${selectedRef.current === s.id ? 'is-selected' : ''}`
+      sitePins.current.set(s.id, markerEl)
       markerEl.innerHTML = `<span>#${i + 1}</span>`
       markerEl.title = `${s.address}`
 
@@ -65,7 +80,7 @@ export default function SiteMap({ sites, selectedSiteId, onSelectSite }: SiteMap
       const popupHtml = `
         <div class="map-popup site-popup">
           <div class="popup-rank">Candidate Site #${i + 1}</div>
-          <strong>${s.address}</strong>
+          <strong>${esc(s.address)}</strong>
           <div class="popup-rent">${rent} · ${s.sizeSqft.toLocaleString()} sq ft</div>
           <div class="popup-odds">${odds}</div>
         </div>
@@ -82,19 +97,23 @@ export default function SiteMap({ sites, selectedSiteId, onSelectSite }: SiteMap
 
     // 2. Competitors & Complements from all sites (deduplicated by coords + name)
     const seenComp = new Set<string>()
-    const allComps: { comp: Competitor; siteAddress: string }[] = []
+    const allComps: Competitor[] = []
 
     sites.forEach((site) => {
       site.competitors?.forEach((c) => {
         const key = `${c.name}_${c.lat.toFixed(4)}_${c.lon.toFixed(4)}`
         if (!seenComp.has(key)) {
           seenComp.add(key)
-          allComps.push({ comp: c, siteAddress: site.address })
+          allComps.push(c)
         }
       })
     })
 
-    allComps.forEach(({ comp, siteAddress }) => {
+    allComps.forEach((comp) => {
+      // distance from the nearest candidate on the map, so the number matches what the user sees
+      const near = sites
+        .map((s, i) => ({ i, s, d: milesBetween(s, comp) }))
+        .reduce((a, b) => (b.d < a.d ? b : a))
       const isComp = comp.kind === 'competitor'
       const isCompl = comp.kind === 'complement'
 
@@ -115,9 +134,10 @@ export default function SiteMap({ sites, selectedSiteId, onSelectSite }: SiteMap
       const popupHtml = `
         <div class="map-popup comp-popup">
           <span class="popup-tag ${isComp ? 'tag-comp' : 'tag-compl'}">${kindLabel}</span>
-          <strong>${comp.name}</strong>
+          <strong>${esc(comp.name)}</strong>
+          <div class="popup-meta">${comp.address ? esc(comp.address) : `${comp.lat.toFixed(5)}, ${comp.lon.toFixed(5)}`}</div>
           <div class="popup-meta">${ratingText}</div>
-          <div class="popup-sub">${comp.distanceMi.toFixed(2)} mi from ${siteAddress}</div>
+          <div class="popup-sub">${near.d.toFixed(2)} mi from #${near.i + 1} ${esc(near.s.address)}</div>
         </div>
       `
 
@@ -130,14 +150,30 @@ export default function SiteMap({ sites, selectedSiteId, onSelectSite }: SiteMap
       markers.push(marker)
     })
 
-    if (!bounds.isEmpty()) {
+    // refit only when the set of candidates changes, not on every streamed update or selection
+    const key = sites.map((s) => s.id).join(',')
+    if (!bounds.isEmpty() && key !== fittedKey.current) {
+      fittedKey.current = key
       m.fitBounds(bounds, { padding: 90, maxZoom: 14 })
     }
 
+    const pins = sitePins.current
     return () => {
       markers.forEach((mk) => mk.remove())
+      pins.clear()
     }
-  }, [sites, showCompetitors, showComplements, selectedSiteId, onSelectSite])
+  }, [sites, showCompetitors, showComplements, onSelectSite])
+
+  // selection (from a card or a pin): highlight the pin and move the map to it
+  useEffect(() => {
+    sitePins.current.forEach((pin, id) => pin.classList.toggle('is-selected', id === selectedSiteId))
+    const s = sites.find((x) => x.id === selectedSiteId)
+    if (s && map.current) map.current.flyTo({ center: [s.lon, s.lat], zoom: 15, essential: true })
+  }, [selectedSiteId]) // only on a new selection, not on every streamed update
+
+  // every shown site's competitor lookup failed (OpenStreetMap servers down): say so instead of an empty map
+  const noCompetitorData =
+    sites.length > 0 && sites.every((s) => s.gaps.some((g) => g.startsWith('no competitors')))
 
   return (
     <div className="map-wrapper" style={{ position: 'absolute', inset: 0 }}>
@@ -159,6 +195,7 @@ export default function SiteMap({ sites, selectedSiteId, onSelectSite }: SiteMap
             />
             <span className="legend-icon comp-icon" />
             <span>Competitors</span>
+            {noCompetitorData && <span className="legend-note">(lookup failed, try again)</span>}
           </label>
           <label className="legend-item checkbox-label">
             <input

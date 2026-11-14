@@ -6,6 +6,7 @@ export interface BusinessBrief {
   maxRentMonthly: number
   sizeSqftMin: number | null
   sizeSqftMax: number | null
+  parkingRequired: boolean
   mustHaves: string[]
 }
 
@@ -46,6 +47,7 @@ export interface Competitor {
   reviewCount: number | null
   isNew: boolean
   attractiveness: number
+  address: string | null
   source: 'yelp' | 'osm'
 }
 
@@ -103,6 +105,11 @@ export interface Site {
   rentPsfYear: number | null
   serviceType: string
   spaceUse: string
+  parkingAvailable: boolean | null // CoStar property record; null = not recorded
+  parkingSpaces: number | null
+  parkingTypes: string[]
+  buildingClass: string | null
+  yearBuilt: number | null
   photoUrl: string | null
   matterportModelId: string | null
   aerial: Aerial | null

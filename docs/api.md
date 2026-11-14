@@ -35,7 +35,8 @@ One `event:` per message, `data:` is JSON.
 | `brief` | `BusinessBrief` | Request parsed, and again whenever the agent relaxes a limit |
 | `plan` | `{ "todos": [{ "title": "...", "status": "pending" \| "in_progress" \| "completed" }] }` | The agent writes or updates its plan |
 | `step` | `{ "id": "s3", "tool": "vexcel", "siteId": "L123", "message": "Reading the aerial image of 9700 Tanner Rd", "status": "running" \| "done" \| "error" }` | Each tool call starts and ends |
-| `site` | `Site` | A site's evidence is complete (cards appear one by one) |
+| `site` | `Site` | A candidate is found or its evidence changes (same `id` again = replace the card). Cards appear right after the CoStar search, then again with Census and competitor data |
+| `ranking` | `{ "siteIds": ["L123", …], "reason": "..." }` | The agent's top picks, best first, sent before their simulations run (show them with a "simulating" state) |
 | `sim` | `{ "siteId": "L123", "result": SimResult }` | Simulation finished for a site |
 | `report` | `{ "markdown": "..." }` | Final recommendation written |
 | `done` | `{ "runId": "r_8f2c1a" }` | Stream ends |

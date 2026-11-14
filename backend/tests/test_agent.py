@@ -80,3 +80,11 @@ def test_pipeline_simulates_only_top_cheapest(run):
     pipeline.finish(run)
     assert sorted(i for i, s in run.sites.items() if s.sim) == ["X0", "X1", "X2"]  # the 3 cheapest
     assert agent_run.ranked(run)[-2:] == [run.sites["X3"], run.sites["X4"]]  # unsimulated listed last
+
+
+def test_rank_shows_picks_before_simulation(run):
+    run.sites = {s.id: s for s in _golden_sites(4)}
+    tool(run, "rank")(["X2", "nope", "X0"], "cheap and busy")
+    assert run.ranking == ["X2", "X0"]
+    assert ("ranking", {"siteIds": ["X2", "X0"], "reason": "cheap and busy"}) in run.events
+    assert all(s.sim is None for s in run.sites.values())
