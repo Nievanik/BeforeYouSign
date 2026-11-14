@@ -11,11 +11,11 @@ Runs the same tools as the agent in a reliable, fixed order without requiring an
 """
 from datetime import datetime, timezone
 import time
-from typing import Any, Callable, Generator, Optional
+from typing import Any, Callable, Optional
 import uuid
 
 from app.config import BUSINESS_PROFILES
-from app.models import Band, BusinessBrief, MonthBand, PeopleNearby, RiskFactor, RunResult, SimResult, Site
+from app.models import Band, BusinessBrief, MonthBand, PeopleNearby, RunResult, SimResult, Site
 from app.sim.risk import extract_risk_factors
 from app.tools import census, costar, matterport, osm, vexcel
 
@@ -218,3 +218,30 @@ def run_pipeline(
 
     emit("done", {"runId": run_id})
     return result
+
+
+def finish(run) -> None:
+    """Find sites if needed, simulate each one not yet simulated, rank by odds, write a templated report."""
+    run.calls, run.started = 0, time.monotonic()  # fresh budget: at most 1 search + SHORTLIST sims
+    tools = {t.__name__: t for t in run.tools()}
+    if not run.sites:
+        tools["find_candidates"]()
+    for s in list(run.sites.values()):
+        if not s.sim:
+            tools["simulate"](s.id)
+    done = sorted((s for s in run.sites.values() if s.sim), key=lambda s: s.sim.pProfitableBy12, reverse=True)
+    run.ranking = [s.id for s in done]
+    if not done:
+        run.report = "Auto mode found no sites it could simulate. Try a higher rent limit or a wider size range."
+        return
+    lines = [
+        f"{i}. **{s.address}**: {s.sim.pProfitableBy12:.0%} chance of profit by month 12, "
+        f"~{s.sim.expectedCustomers:.0f} customers/day vs {s.sim.breakEvenCustomers:.0f} needed, "
+        f"${s.rentMonthly:,.0f}/mo" + (f". Gaps: {', '.join(s.gaps)}" if s.gaps else "")
+        for i, s in enumerate(done, 1)
+    ]
+    run.report = (
+        "## Ranking (auto mode)\n\nThe agent stopped early, so sites are ranked by simulated odds only.\n\n"
+        + "\n".join(lines)
+        + "\n\nCompare sites with these numbers; don't bank on the dollars."
+    )

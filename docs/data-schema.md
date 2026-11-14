@@ -70,6 +70,9 @@ Keep `serviceType`: TripleNet rent excludes taxes, insurance and CAM, so add `co
 | `rooms` | list[{label, areaSqft, widthFt, depthFt}] | `rooms[]`. Label and dimensions can be empty, so skip those rooms |
 | `estSeats` | int | `(front-of-house area) / 15 sq ft per seat`. Front of house = floor area − kitchen/storage/restroom rooms (or 60% of floor area if rooms are unlabeled) |
 | `tourUrl` | str | built from model id |
+| `summary` | str? | `generatedDescription.summary`, Matterport's auto-written description of the space |
+
+Floor plan image: `/api/sites/{id}/floorplan.jpg`, from `assets.floorplans` (jpg). The URL expires within hours, so the backend caches the bytes.
 
 > Matterport scans are of the **property**, which may not be the exact listed suite. Show "scan of building" when unsure.
 

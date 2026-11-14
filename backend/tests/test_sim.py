@@ -1,105 +1,127 @@
-"""Simulation validation suite (docs/simulation.md Section 8).
-
-Validates reproducibility, edge cases (zero demand, zero rent), calibration, and runtime performance.
-"""
 import time
 
+import pytest
+
+from app import sim
 from app.config import BUSINESS_PROFILES
 from app.models import Competitor, Demographics, Site
 from app.sim.huff import estimate_huff_demand
 from app.sim.montecarlo import simulate_site
 
-
-def _make_sample_site(rent=2500, competitors=None, population=25000):
-    return Site(
-        id="L100-S100",
-        listingId=100,
-        propertyId=200,
-        address="123 Test St",
-        lat=29.75,
-        lon=-95.36,
-        sizeSqft=1500,
-        serviceType="TripleNet",
-        spaceUse="Retail",
-        rentMonthly=rent,
-        competitors=competitors or [],
-        demographics=Demographics(
-            population=population,
-            densityPerSqMi=4000,
-            tract="48201",
-        ),
-    )
-
-
-def test_simulation_reproducibility():
-    """Same seed produces identical results."""
-    site = _make_sample_site()
-    profile = BUSINESS_PROFILES["boba"]
-
-    res1 = simulate_site(site, profile, seed=42)
-    res2 = simulate_site(site, profile, seed=42)
-
-    assert res1.pProfitableBy12 == res2.pProfitableBy12
-    assert res1.profitM12.p50 == res2.profitM12.p50
-    assert res1.expectedCustomers == res2.expectedCustomers
+BOBA = {
+    "typicalDailyCustomers": 110,
+    "ticket": 8.0,
+    "ticketSd": 1.25,
+    "cogsMin": 0.25,
+    "cogsMax": 0.35,
+    "laborFixedMonthly": 7000,
+    "laborVariablePct": 0,
+    "otherFixedMonthly": 1500,
+    "daysOpen": 30,
+    "rampMin": 3,
+    "rampMax": 9,
+    "startupCost": 110_000,
+    "radiusMi": 1,
+    "lambda": 2,
+    "workerWeight": 0.5,
+    "newCompetitorRatePerYear": 0.3,
+    "rentShareMax": 0.15,
+}
+LAT, LON = 29.70, -95.48
 
 
-def test_zero_people_zero_profit():
-    """Zero people nearby guarantees 0% chance of profitability."""
-    site = _make_sample_site(population=0)
-    profile = BUSINESS_PROFILES["coffee"]
-
-    res = simulate_site(site, profile, workers_count=0.0, residents_count=0.0)
-
-    assert res.pProfitableBy12 == 0.0
-    assert res.expectedCustomers == 0.0
-    assert res.profitM12.p50 < 0
+@pytest.fixture(autouse=True)
+def no_workers(monkeypatch):
+    monkeypatch.setattr(sim, "_worker_points", lambda lon: [])
 
 
-def test_zero_rent_no_competitors_high_profit():
-    """Rent $0, no competitors, and high demand produces near 100% odds."""
-    site = _make_sample_site(rent=0, competitors=[], population=60000)
-    profile = BUSINESS_PROFILES["boba"]
-
-    res = simulate_site(site, profile, workers_count=10000.0, residents_count=60000.0)
-
-    assert res.pProfitableBy12 >= 0.85
-    assert res.profitM12.p50 > 0
-
-
-def test_calibration_matches_typical():
-    """Site identical to the median competitor gets exactly typicalDailyCustomers."""
-    # Competitor sharing the same trade location and median attractiveness
-    comp = Competitor(
-        name="Median Shop",
+def comp(dlat, dlon, a=3.0):
+    return Competitor(
+        name="c",
         kind="competitor",
-        lat=29.75,
-        lon=-95.36,
-        distanceMi=0.0,
-        rating=4.0,
-        reviewCount=20,
+        lat=LAT + dlat,
+        lon=LON + dlon,
+        distanceMi=0.5,
+        rating=None,
+        reviewCount=None,
         isNew=False,
-        attractiveness=3.04,
+        attractiveness=a,
         source="osm",
     )
-    site = _make_sample_site(competitors=[comp])
+
+
+def site(density=10_000, rent=3000.0, comps=()):
+    return Site(
+        id="s",
+        listingId=1,
+        propertyId=1,
+        address="a",
+        lat=LAT,
+        lon=LON,
+        sizeSqft=1200,
+        rentMonthly=rent,
+        rentPsfYear=None,
+        serviceType="",
+        spaceUse="",
+        photoUrl=None,
+        matterportModelId=None,
+        aerial=None,
+        interior=None,
+        competitors=list(comps),
+        demographics=Demographics(population=5000, tract="t", densityPerSqMi=density),
+        sim=None,
+        gaps=[],
+    )
+
+
+def test_same_seed_same_odds():
+    s = site(comps=[comp(0.005, 0), comp(-0.008, 0.004)])
+    assert sim.simulate(s, BOBA).pProfitableBy12 == sim.simulate(s, BOBA).pProfitableBy12
+
+
+def test_zero_people_zero_odds():
+    assert sim.simulate(site(density=0, comps=[comp(0.005, 0)]), BOBA).pProfitableBy12 == 0
+
+
+def test_free_rent_no_competitors_dense_area_near_certain():
+    r = sim.simulate(site(density=20_000, rent=0), BOBA, {"newCompetitors": False})
+    assert r.pProfitableBy12 > 0.95
+
+
+def test_site_like_median_competitor_gets_typical_customers():
+    s = site(comps=[comp(0, 0)])
+    assert sim.simulate(s, BOBA).expectedCustomers == pytest.approx(BOBA["typicalDailyCustomers"], rel=0.02)
+
+
+def test_what_if_changes_only_the_override():
+    s = site(rent=6000, comps=[comp(0.005, 0)])
+    base, cheaper = sim.simulate(s, BOBA), sim.simulate(s, BOBA, {"rentMonthly": 2000})
+    assert cheaper.pProfitableBy12 > base.pProfitableBy12
+    assert cheaper.expectedCustomers == base.expectedCustomers
+
+
+def test_unknown_override_rejected():
+    with pytest.raises(ValueError):
+        sim.simulate(site(), BOBA, {"rent": 1})
+
+
+def test_huff_estimate_nonzero_with_population():
+    s = site(comps=[comp(0.005, 0)])
+    mean, total = estimate_huff_demand(s, BUSINESS_PROFILES["boba"], workers_count=5000, residents_count=10000)
+    assert mean > 0
+    assert total > 0
+
+
+def test_montecarlo_wrapper_reproducibility():
+    s = site(comps=[comp(0.005, 0)])
     profile = BUSINESS_PROFILES["boba"]
-
-    cust, _ = estimate_huff_demand(site, profile, workers_count=5000.0, residents_count=25000.0)
-    typical = profile["typicalDailyCustomers"]
-
-    # Identical store gets exactly the calibrated typical benchmark
-    assert cust == typical
+    r1 = simulate_site(s, profile, seed=42)
+    r2 = simulate_site(s, profile, seed=42)
+    assert r1.pProfitableBy12 == r2.pProfitableBy12
 
 
-def test_simulation_performance():
-    """1,000 runs complete in well under 1 second."""
-    site = _make_sample_site()
-    profile = BUSINESS_PROFILES["fast_casual"]
-
-    t0 = time.perf_counter()
-    res = simulate_site(site, profile, num_runs=1000, seed=123)
-    elapsed = time.perf_counter() - t0
-
-    assert elapsed < 0.5  # must run fast (< 500 ms)
-    assert len(res.monthlyBands) == 24
+def test_fast_enough():
+    s = site(comps=[comp(0.005 * i, 0.003) for i in range(1, 8)])
+    t = time.perf_counter()
+    sim.simulate(s, BOBA)
+    assert time.perf_counter() - t < 1

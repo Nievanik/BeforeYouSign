@@ -62,6 +62,13 @@ export default function SiteCard({ site, rank }: { site: Site; rank: number }) {
           </figcaption>
         </figure>
       )}
+      {site.interior?.summary && <p className="summary">{site.interior.summary}</p>}
+      {site.matterportModelId && (
+        <details>
+          <summary>Floor plan</summary>
+          <img src={`/api/sites/${site.id}/floorplan.jpg`} alt={`Floor plan of the 3D scan at ${site.address}`} loading="lazy" />
+        </details>
+      )}
       {site.matterportModelId ? (
         <TourEmbed modelId={site.matterportModelId} buildingScan={site.gaps.includes('3D scan is of the whole building')} />
       ) : (

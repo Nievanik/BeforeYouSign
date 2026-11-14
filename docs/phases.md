@@ -66,11 +66,11 @@ Every tool: plain function → returns `models.py` types → cached. Test each o
 ## Phase 3: Simulation (A, 4:00–6:00)
 
 - [ ] `config.py`: `BUSINESS_PROFILES` from `business-profiles.md` (5 types)
-- [ ] `sim/huff.py`: demand grid, Huff share, calibration `r` from the median competitor
-- [ ] `sim/montecarlo.py`: 1,000 × 24 P&L, `pProfitableBy12`, bands, break-even customers, payback
+- [x] `sim/huff.py`: demand grid, Huff share, calibration `r` from the median competitor
+- [x] `sim/montecarlo.py`: 1,000 × 24 P&L, `pProfitableBy12`, bands, break-even customers, payback
 - [ ] Risk factors (top 3, plain-English text with site evidence)
 - [ ] `simulate(siteId, overrides)` for agent what-ifs (`simulation.md` §7b)
-- [ ] `tests/test_sim.py`: same seed → same result · zero people → 0% · calibration ≈ typical · < 1 s
+- [x] `tests/test_sim.py`: same seed → same result · zero people → 0% · calibration ≈ typical · < 1 s
 
 **Meanwhile B:** profit fan chart + odds bar from fixture `SimResult`.
 
@@ -78,13 +78,13 @@ Every tool: plain function → returns `models.py` types → cached. Test each o
 
 ## Phase 4: Agent (B, 4:00–7:30)
 
-- [ ] OpenRouter client (`ChatOpenAI` with base_url), model from `OPENROUTER_MODEL`, 429 backoff, response cache
-- [ ] Parse the request → `BusinessBrief` (structured output); unknown business type → LLM-proposed profile tagged "AI estimate"
-- [ ] deepagents agent with tools: `find_candidates`, `relax_constraint`, `people_nearby`, `competitors`, `inspect_aerial`, `inspect_interior`, `simulate`, `finish`
-- [ ] System prompt enforces the 4 behaviors in `requirements.md` F8: re-plan, triage, investigate, explain
-- [ ] Guardrails: max 25 tool calls / 120 s → switch to `pipeline.py`
-- [ ] `agent/pipeline.py`: the same tools in a fixed order (fallback)
-- [ ] `POST /analyze` + SSE events (`api.md`): plan, step, site, sim, report, done
+- [x] OpenRouter client (`ChatOpenAI` with base_url), model from `OPENROUTER_MODEL`, 429 backoff, response cache
+- [x] Parse the request → `BusinessBrief` (structured output); unknown business type → LLM-proposed profile tagged "AI estimate"
+- [x] deepagents agent with tools: `find_candidates`, `relax_constraint`, `people_nearby`, `competitors`, `inspect_aerial`, `inspect_interior`, `simulate`, `finish`
+- [x] System prompt enforces the 4 behaviors in `requirements.md` F8: re-plan, triage, investigate, explain
+- [x] Guardrails: max 25 tool calls / 120 s → switch to `pipeline.py`
+- [x] `agent/pipeline.py`: the same tools in a fixed order (fallback)
+- [x] `POST /analyze` + SSE events (`api.md`): plan, step, site, sim, report, done
 
 **Gate:** golden query through the API streams a plan, at least one re-plan or investigation step, and a ranked result. The fallback also works with the LLM turned off.
 

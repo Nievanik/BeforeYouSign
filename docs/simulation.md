@@ -10,6 +10,19 @@ Decisions (agreed 2026-11-14):
 
 Pipeline per site: **people nearby → Huff share → daily customers → 1,000 × 24-month P&L → odds + risks.**
 
+## Contract (frozen 2026-11-14)
+
+```python
+from app.sim import simulate
+simulate(site: Site, profile: dict, overrides: dict | None = None, seed: int = 7) -> SimResult
+```
+
+- `profile`: one `BUSINESS_PROFILES` entry from `config.py` (fields as in [business-profiles.md](business-profiles.md)).
+- `overrides`: any profile field, `rentMonthly`, or the switches `newCompetitors` / `accessPenalty` (`False` = off). Unknown keys raise `ValueError`.
+- Returns `SimResult` (`models.py` and `frontend/src/types.ts`, unchanged). `assumptions` = every input actually used, so the assumptions panel edits them and sends changes back as `overrides`.
+- Agent tool: `simulate(siteId, overrides)` looks up the site and the brief's profile, then calls the function above.
+- Until the math lands, build against the `sim` blocks in `fixtures/golden_run.json`.
+
 ## 1. People nearby (demand points)
 
 A grid of points every ~200 m within the trade radius (profile: `radiusMi`, e.g. 1 mi for boba). Each point *i* has:

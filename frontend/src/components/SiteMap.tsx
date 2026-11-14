@@ -7,7 +7,6 @@ import type { Competitor, Site } from '../types'
 maplibregl.setWorkerUrl(workerUrl)
 
 const HOUSTON: [number, number] = [-95.3698, 29.7604]
-
 interface SiteMapProps {
   sites: Site[]
   selectedSiteId?: string
@@ -39,7 +38,6 @@ export default function SiteMap({ sites, selectedSiteId, onSelectSite }: SiteMap
   useEffect(() => {
     const m = map.current
     if (!m || sites.length === 0) return
-
     const markers: maplibregl.Marker[] = []
     const bounds = new maplibregl.LngLatBounds()
 
