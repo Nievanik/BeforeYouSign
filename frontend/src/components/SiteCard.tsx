@@ -30,12 +30,30 @@ function oddsBg(odds: number): string {
 
 const ABBR: Record<string, string> = { north: 'N', east: 'E', south: 'S', west: 'W' }
 
-export default function SiteCard({ site, rank }: { site: Site; rank: number }) {
+export default function SiteCard({
+  site,
+  rank,
+  onSimulate,
+}: {
+  site: Site
+  rank: number
+  onSimulate?: () => Promise<void> // set for candidates the agent did not simulate
+}) {
   const a = site.aerial
   const [view, setView] = useState('above') // "above" or an oblique direction
   const [showChart, setShowChart] = useState(true)
   const [showAssumptions, setShowAssumptions] = useState(false)
   const [overrideSim, setOverrideSim] = useState<SimResult | null>(null)
+  const [simulating, setSimulating] = useState(false)
+  const [simError, setSimError] = useState('')
+  const runSimulation = () => {
+    if (!onSimulate) return
+    setSimulating(true)
+    setSimError('')
+    onSimulate()
+      .catch((e) => setSimError(`Simulation failed: ${e}`))
+      .finally(() => setSimulating(false))
+  }
 
   const currentSim = overrideSim ?? site.sim
   const odds = currentSim?.pProfitableBy12 ?? 0
@@ -103,7 +121,19 @@ export default function SiteCard({ site, rank }: { site: Site; rank: number }) {
           </div>
         </div>
       ) : (
-        <div className="missing-state">Simulation data pending</div>
+        <div className="missing-state">
+          {onSimulate ? (
+            <>
+              <span>Not simulated yet: the agent simulated its top picks only.</span>{' '}
+              <button type="button" className="simulate-btn" onClick={runSimulation} disabled={simulating}>
+                {simulating ? 'Simulating 1,000 futures…' : 'Simulate this site'}
+              </button>
+              {simError && <span className="sim-error">{simError}</span>}
+            </>
+          ) : (
+            'Simulation data pending'
+          )}
+        </div>
       )}
 
       {/* Assumptions / What-If Panel Drawer */}

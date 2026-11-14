@@ -221,14 +221,16 @@ def run_pipeline(
 
 
 def finish(run) -> None:
-    """Find sites if needed, simulate each one not yet simulated, rank by odds, write a templated report."""
-    run.calls, run.started = 0, time.monotonic()  # fresh budget: at most 1 search + SHORTLIST sims
+    """Find sites if needed, simulate the TOP cheapest (counting any already done), rank by odds, write a report."""
+    from app.agent.run import TOP
+
+    run.calls, run.started = 0, time.monotonic()  # fresh budget: at most 1 search + TOP sims
     tools = {t.__name__: t for t in run.tools()}
     if not run.sites:
         tools["find_candidates"]()
-    for s in list(run.sites.values()):
-        if not s.sim:
-            tools["simulate"](s.id)
+    todo = sorted((s for s in run.sites.values() if not s.sim), key=lambda s: s.rentMonthly or 0)
+    for s in todo[: max(0, TOP - sum(1 for s in run.sites.values() if s.sim))]:
+        tools["simulate"](s.id)
     done = sorted((s for s in run.sites.values() if s.sim), key=lambda s: s.sim.pProfitableBy12, reverse=True)
     run.ranking = [s.id for s in done]
     if not done:

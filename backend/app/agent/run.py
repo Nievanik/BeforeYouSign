@@ -17,6 +17,7 @@ from app.tools import census, costar, matterport, osm, vexcel, vision
 # shortcut: 120 s in requirements.md is too tight with live Overpass/Vexcel on a cold cache; cached reruns are fast
 MAX_TOOL_CALLS, MAX_SECONDS = 25, 240
 SHORTLIST, THIN = 8, 5
+TOP = 3  # sites the agent simulates; the user can simulate the rest from their cards
 RENT_STEP, SIZE_STEP = 1.15, 0.25
 
 SYSTEM = """You are a commercial real estate analyst helping a small-business owner pick where to lease.
@@ -24,13 +25,16 @@ Tools return short text; site ids look like "L123-S4". Work like this, and say W
 before each tool call:
 1. Plan first with write_todos.
 2. find_candidates. If it reports fewer than {thin} sites, call relax_constraint ONCE (rent or size), say which and why.
-3. Triage: run simulate on EVERY site (cheap; it gathers people and competitors itself).
+3. Pick the {top} most promising sites from the list (rent well under the limit, size that fits, more workers
+   nearby) and say why in one sentence. Run simulate on those {top} ONLY: each simulation is slow. The user can
+   simulate the others later, so do not simulate them.
    people_nearby and competitors give more detail: use them only when investigating a site.
-4. Run inspect_aerial and inspect_interior only on the top {top} sites by odds (expensive).
+4. Run inspect_aerial and inspect_interior on your {top} simulated sites (expensive).
 5. Investigate (REQUIRED, at least one before finish): for the lowest-odds or most surprising site, rerun simulate with one factor switched off
    (overrides {{"newCompetitors": false}}, {{"accessPenalty": false}} or a lower "rentMonthly") to find what drives it.
    Missing data: note the gap and move on.
-6. Call finish with the ranking (best first) and a short report that cites numbers for each pick.
+6. Call finish with the ranking of your simulated sites (best first) and a short report that cites numbers for
+   each pick and names the other candidates as "not simulated yet".
 You have at most {max_calls} tool calls in total, so do not repeat calls."""
 
 
@@ -104,7 +108,12 @@ class Run:
                         props.add(s.propertyId)
                 # a repeat search keeps already-gathered evidence (sims, aerials) for sites it finds again
                 run.sites = {s.id: run.sites.get(s.id, s) for s in picked[:SHORTLIST]}
-                lines = [f"{s.id}: {s.address}, ${s.rentMonthly:,.0f}/mo, {s.sizeSqft:,.0f} sq ft" for s in run.sites.values()]
+                r = run.profile["radiusMi"]
+                lines = [f"{s.id}: {s.address}, ${s.rentMonthly:,.0f}/mo, {s.sizeSqft:,.0f} sq ft, "
+                         f"{costar.workers_nearby(s.lat, s.lon, r, run.brief.city):,} workers within {r} mi"
+                         for s in run.sites.values()]
+                for s in run.sites.values():  # cards and map pins appear now; odds come once a site is simulated
+                    run.emit("site", s.model_dump())
                 return f"{len(picked)} priced sites match (showing {len(run.sites)}):\n" + "\n".join(lines)
             return run.step("costar", "Searching CoStar lease listings", None, go)
 
@@ -206,10 +215,11 @@ class Run:
 
 
 def ranked(run: Run) -> list[Site]:
-    """The agent's ranking first, then any other simulated site by odds."""
+    """The agent's ranking first, then any other simulated site by odds, then the not-yet-simulated candidates."""
     rest = sorted((s for i, s in run.sites.items() if i not in run.ranking and s.sim),
                   key=lambda s: s.sim.pProfitableBy12, reverse=True)
-    return [run.sites[i] for i in run.ranking] + rest
+    unsimulated = [s for i, s in run.sites.items() if i not in run.ranking and not s.sim]
+    return [run.sites[i] for i in run.ranking] + rest + unsimulated
 
 
 def run_agent(query: str, emit: Callable[[str, dict], None], brief: BusinessBrief | None = None) -> Run:
@@ -220,7 +230,7 @@ def run_agent(query: str, emit: Callable[[str, dict], None], brief: BusinessBrie
     if run.ai_profile:
         emit("step", {"id": "s0", "tool": "profile", "siteId": None, "status": "done",
                       "message": f"No preset for {brief.businessType!r}: business numbers are an AI estimate"})
-    prompt = SYSTEM.format(thin=THIN, top=5, max_calls=MAX_TOOL_CALLS)
+    prompt = SYSTEM.format(thin=THIN, top=TOP, max_calls=MAX_TOOL_CALLS)
     agent = create_deep_agent(model=chat_model(), tools=run.tools(), system_prompt=prompt)
     try:
         for chunk in agent.stream({"messages": [{"role": "user", "content": f"Brief: {brief.model_dump_json()}"}]},

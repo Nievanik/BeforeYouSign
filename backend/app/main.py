@@ -15,7 +15,7 @@ from pydantic import BaseModel
 from app import config
 from app.agent.brief import parse_brief
 from app.agent.report import generate_report
-from app.agent.run import ranked, run_agent
+from app.agent.run import Run, ranked, run_agent
 from app.cache import CacheMiss, cached
 from app.models import BusinessBrief, RunResult, SimResult, Site
 from app.sim import simulate
@@ -196,6 +196,22 @@ async def run_events(run_id: str):
             if event == "done":
                 return
         await asyncio.sleep(0.2)
+
+
+@api.post("/runs/{run_id}/sites/{site_id}/simulate", response_model=Site)
+def simulate_candidate(run_id: str, site_id: str):
+    """Simulate a candidate the agent left out: gathers its Census and competitor data, then runs the 1,000 futures."""
+    rec = RUNS.get(run_id)
+    if not rec:
+        raise HTTPException(404, "unknown run")
+    if not rec["result"]:
+        raise HTTPException(409, "run not finished")
+    site = next((s for s in rec["result"].sites if s.id == site_id), None)
+    if not site:
+        raise HTTPException(404, "unknown site")
+    if not site.sim:  # updates the stored run in place, so a reload keeps it
+        site.sim = Run(rec["result"].brief, lambda e, d: None).run_sim(site)
+    return site
 
 
 @api.get("/runs/{run_id}", response_model=RunResult)

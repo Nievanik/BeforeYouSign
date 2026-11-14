@@ -138,3 +138,20 @@ def test_keyword_fallback_does_not_invent_sizes():
     data = client.post("/api/analyze", json={"query": "Hair salon in Houston"}).json()
     assert data["brief"]["businessType"] == "salon"
     assert data["brief"]["sizeSqftMin"] is None and data["brief"]["sizeSqftMax"] is None
+
+
+def test_simulate_a_candidate_the_agent_skipped():
+    import json
+    from pathlib import Path
+    from app import main
+    from app.models import RunResult
+
+    golden = json.loads((Path(__file__).parents[1] / "fixtures" / "golden_run.json").read_text())
+    golden["sites"][2]["sim"] = None
+    main.RUNS["r_test"] = {"events": [], "result": RunResult(**{**golden, "runId": "r_test"})}
+    sid = golden["sites"][2]["id"]
+    site = client.post(f"/api/runs/r_test/sites/{sid}/simulate").json()
+    assert 0 <= site["sim"]["pProfitableBy12"] <= 1
+    assert client.get("/api/runs/r_test").json()["sites"][2]["sim"] is not None  # stored, survives a reload
+    assert client.post("/api/runs/r_test/sites/nope/simulate").status_code == 404
+    assert client.post("/api/runs/nope/sites/x/simulate").status_code == 404

@@ -51,6 +51,10 @@ Returns `RunResult` (brief, sites with sim results, report). `404` if the id is 
 
 The first clean live run of each query is recorded to `backend/cache/runs/`. With `OFFLINE=1`, `/analyze` replays that recording (same events, pauses capped at 2 s), so the demo shows the agent's plan with Wi-Fi off. Delete the recording to re-record.
 
+## `POST /runs/{runId}/sites/{siteId}/simulate`
+
+The agent simulates only its top 3 picks; the other candidates arrive as `site` events with `sim: null`. This gathers one of those sites' Census and competitor data, runs the simulation, stores it in the run and returns the updated `Site`. `404` unknown run or site, `409` run still going.
+
 ## `GET /sites/{siteId}/aerial.jpg`
 
 Cached Vexcel ortho image with the parcel outline drawn on it. The key stays server-side; the browser only sees this proxy.

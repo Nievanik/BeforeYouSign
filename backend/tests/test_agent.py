@@ -62,3 +62,21 @@ def test_repeat_search_keeps_gathered_evidence(run, monkeypatch):
     monkeypatch.setattr(agent_run.costar, "find_candidates", lambda b: [Site(**{**d, "sim": None})])
     tool(run, "find_candidates")()
     assert run.sites[d["id"]].sim is not None
+
+
+def _golden_sites(n):
+    import json
+    from pathlib import Path
+    from app.models import Site
+
+    base = json.loads((Path(__file__).parents[1] / "fixtures" / "golden_run.json").read_text())["sites"]
+    return [Site(**{**base[i % len(base)], "id": f"X{i}", "rentMonthly": 2000 + i, "sim": None}) for i in range(n)]
+
+
+def test_pipeline_simulates_only_top_cheapest(run):
+    from app.agent import pipeline
+
+    run.sites = {s.id: s for s in _golden_sites(5)}
+    pipeline.finish(run)
+    assert sorted(i for i, s in run.sites.items() if s.sim) == ["X0", "X1", "X2"]  # the 3 cheapest
+    assert agent_run.ranked(run)[-2:] == [run.sites["X3"], run.sites["X4"]]  # unsimulated listed last

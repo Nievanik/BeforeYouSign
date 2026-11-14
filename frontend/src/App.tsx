@@ -133,6 +133,27 @@ export default function App() {
       })
   }
 
+  // simulate a candidate the agent skipped; the server stores it, so the final run stays complete
+  const simulateSite = async (siteId: string) => {
+    if (!run) return
+    const res = await fetch(`/api/runs/${run.runId}/sites/${siteId}/simulate`, { method: 'POST' })
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    const site = (await res.json()) as Site
+    setRun((prev) => (prev ? { ...prev, sites: prev.sites.map((s) => (s.id === site.id ? site : s)) } : prev))
+  }
+  const [simulatingAll, setSimulatingAll] = useState(false)
+  const unsimulated = run && !loading && run.runId !== 'golden' ? run.sites.filter((s) => !s.sim) : []
+  const simulateRemaining = async () => {
+    setSimulatingAll(true)
+    try {
+      for (const s of unsimulated) await simulateSite(s.id) // one at a time: each gathers live data
+    } catch (e) {
+      setError(`Simulation failed: ${e}`)
+    } finally {
+      setSimulatingAll(false)
+    }
+  }
+
   // while streaming, order by odds so far (unsimulated last); once done, the server's ranked order is used as-is
   const odds = (s: Site) => s.sim?.pProfitableBy12 ?? -1
   const shownSites = loading && run ? [...run.sites].sort((a, b) => odds(b) - odds(a)) : (run?.sites ?? [])
@@ -170,6 +191,11 @@ export default function App() {
               <div className="sites-header">
                 Candidate Properties ({run.sites.length})
                 {loading && <span className="streaming-dot">● streaming…</span>}
+                {unsimulated.length > 0 && (
+                  <button type="button" className="simulate-btn" onClick={simulateRemaining} disabled={simulatingAll}>
+                    {simulatingAll ? 'Simulating…' : `Simulate remaining ${unsimulated.length}`}
+                  </button>
+                )}
               </div>
                 {run.report && !loading && (
                 <details className="agent-report-card" open>
@@ -178,7 +204,12 @@ export default function App() {
                 </details>
               )}
               {shownSites.map((s, i) => (
-                <SiteCard key={s.id} site={s} rank={i + 1} />
+                <SiteCard
+                  key={s.id}
+                  site={s}
+                  rank={i + 1}
+                  onSimulate={!s.sim && unsimulated.includes(s) ? () => simulateSite(s.id) : undefined}
+                />
               ))}
             </aside>
           )}
