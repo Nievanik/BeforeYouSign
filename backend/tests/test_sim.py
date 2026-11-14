@@ -3,12 +3,30 @@ import time
 import pytest
 
 from app import sim
+from app.config import BUSINESS_PROFILES
 from app.models import Competitor, Demographics, Site
+from app.sim.huff import estimate_huff_demand
+from app.sim.montecarlo import simulate_site
 
-BOBA = {"typicalDailyCustomers": 110, "ticket": 8.0, "ticketSd": 1.25, "cogsMin": 0.25, "cogsMax": 0.35,
-        "laborFixedMonthly": 7000, "laborVariablePct": 0, "otherFixedMonthly": 1500, "daysOpen": 30,
-        "rampMin": 3, "rampMax": 9, "startupCost": 110_000, "radiusMi": 1, "lambda": 2, "workerWeight": 0.5,
-        "newCompetitorRatePerYear": 0.3, "rentShareMax": 0.15}
+BOBA = {
+    "typicalDailyCustomers": 110,
+    "ticket": 8.0,
+    "ticketSd": 1.25,
+    "cogsMin": 0.25,
+    "cogsMax": 0.35,
+    "laborFixedMonthly": 7000,
+    "laborVariablePct": 0,
+    "otherFixedMonthly": 1500,
+    "daysOpen": 30,
+    "rampMin": 3,
+    "rampMax": 9,
+    "startupCost": 110_000,
+    "radiusMi": 1,
+    "lambda": 2,
+    "workerWeight": 0.5,
+    "newCompetitorRatePerYear": 0.3,
+    "rentShareMax": 0.15,
+}
 LAT, LON = 29.70, -95.48
 
 
@@ -18,15 +36,42 @@ def no_workers(monkeypatch):
 
 
 def comp(dlat, dlon, a=3.0):
-    return Competitor(name="c", kind="competitor", lat=LAT + dlat, lon=LON + dlon, distanceMi=0.5,
-                      rating=None, reviewCount=None, isNew=False, attractiveness=a, source="osm")
+    return Competitor(
+        name="c",
+        kind="competitor",
+        lat=LAT + dlat,
+        lon=LON + dlon,
+        distanceMi=0.5,
+        rating=None,
+        reviewCount=None,
+        isNew=False,
+        attractiveness=a,
+        source="osm",
+    )
 
 
 def site(density=10_000, rent=3000.0, comps=()):
-    return Site(id="s", listingId=1, propertyId=1, address="a", lat=LAT, lon=LON, sizeSqft=1200,
-                rentMonthly=rent, rentPsfYear=None, serviceType="", spaceUse="", photoUrl=None,
-                matterportModelId=None, aerial=None, interior=None, competitors=list(comps),
-                demographics=Demographics(population=5000, tract="t", densityPerSqMi=density), sim=None, gaps=[])
+    return Site(
+        id="s",
+        listingId=1,
+        propertyId=1,
+        address="a",
+        lat=LAT,
+        lon=LON,
+        sizeSqft=1200,
+        rentMonthly=rent,
+        rentPsfYear=None,
+        serviceType="",
+        spaceUse="",
+        photoUrl=None,
+        matterportModelId=None,
+        aerial=None,
+        interior=None,
+        competitors=list(comps),
+        demographics=Demographics(population=5000, tract="t", densityPerSqMi=density),
+        sim=None,
+        gaps=[],
+    )
 
 
 def test_same_seed_same_odds():
@@ -44,7 +89,6 @@ def test_free_rent_no_competitors_dense_area_near_certain():
 
 
 def test_site_like_median_competitor_gets_typical_customers():
-    # site and one competitor mirrored around the centre of the grid: same pull, so typical customers
     s = site(comps=[comp(0, 0)])
     assert sim.simulate(s, BOBA).expectedCustomers == pytest.approx(BOBA["typicalDailyCustomers"], rel=0.02)
 
@@ -59,6 +103,21 @@ def test_what_if_changes_only_the_override():
 def test_unknown_override_rejected():
     with pytest.raises(ValueError):
         sim.simulate(site(), BOBA, {"rent": 1})
+
+
+def test_huff_estimate_nonzero_with_population():
+    s = site(comps=[comp(0.005, 0)])
+    mean, total = estimate_huff_demand(s, BUSINESS_PROFILES["boba"], workers_count=5000, residents_count=10000)
+    assert mean > 0
+    assert total > 0
+
+
+def test_montecarlo_wrapper_reproducibility():
+    s = site(comps=[comp(0.005, 0)])
+    profile = BUSINESS_PROFILES["boba"]
+    r1 = simulate_site(s, profile, seed=42)
+    r2 = simulate_site(s, profile, seed=42)
+    assert r1.pProfitableBy12 == r2.pProfitableBy12
 
 
 def test_fast_enough():

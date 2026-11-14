@@ -29,12 +29,21 @@ def test_unknown_run_404():
     assert client.get("/api/runs/nope").status_code == 404
 
 
+def test_analyze_endpoint_starts_run():
+    resp = client.post("/api/analyze", json={"query": "Boba shop in Houston, max $6k/month rent"})
+    assert resp.status_code == 202
+    data = resp.json()
+    assert "runId" in data
+    assert data["brief"]["businessType"] == "boba"
+    assert data["brief"]["city"] == "Houston"
+
+
 def test_analyze_streams_events_then_stores_result(monkeypatch):
     from app import main
     from app.models import BusinessBrief
 
     def fake_agent(query, emit, brief=None):
-        b = BusinessBrief(businessType="boba", city="Houston", maxRentMonthly=6000)
+        b = brief or BusinessBrief(businessType="boba", city="Houston", maxRentMonthly=6000)
         emit("brief", b.model_dump())
         emit("report", {"markdown": "pick A"})
         return type("R", (), {"brief": b, "report": "pick A", "sites": {}, "ranking": []})()

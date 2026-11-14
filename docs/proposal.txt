@@ -1,0 +1,365 @@
+Simulation-Based Evaluation of Small Business Location Feasibility
+Keepa Maharjan
+Caldwell University
+BeforeYouSign
+AI-Powered Commercial Site Selection and Business Risk Simulation
+HackPrinceton Fall 2026 — Comprehensive Project Proposal
+Tagline: Know the risk before you sign the lease.
+Primary HackPrinceton Track: Business and Enterprise
+Special Tracks: CoStar Group — Inside and Out: AI for the Built World; LangChain — Best Use of DeepAgents; Amazon — Best Practical AI Innovation
+Project Type: Applied, research-informed modeling and simulation platform with agentic AI and interactive business decision support.
+Team: 2 developers
+
+1. Executive Summary
+BeforeYouSign is an AI-powered business feasibility platform that helps entrepreneurs evaluate commercial real estate opportunities before committing to a lease.
+Opening a physical business requires substantial financial investment. Entrepreneurs must consider rent, location, competition, operating expenses, nearby customers, parking, and building suitability. These factors are interconnected, yet most available tools evaluate them separately.
+BeforeYouSign combines commercial property intelligence, aerial imagery, 3D interior information, demographic data, and mathematical simulations to answer a central question:
+"If I open my business at this location, what are the possible financial outcomes, how risky is the decision, and what would make it better or worse?"
+The user describes a business idea and desired location in natural language. An AI agent investigates suitable properties and analyzes their physical and market characteristics.
+A spatial customer-demand model estimates the potential market share of the business. A Monte Carlo simulation then evaluates 1,000 possible financial futures over 24 months.
+The system presents estimated profitability probabilities, financial outcome ranges, break-even requirements, and explanations of the major risks.
+Users can compare properties, adjust assumptions, and simulate alternative business decisions through an interactive dashboard.
+The result is a decision-support environment that transforms commercial site selection from a fragmented research process into a structured, evidence-based analysis.
+2. Problem Statement
+Location selection is a major source of risk for small businesses.
+An entrepreneur may find a property with affordable rent but have little information about its ability to attract enough customers to cover operating expenses.
+Several challenges make this decision difficult.
+2.1 Fragmented information
+Commercial listings provide property characteristics and rental information. Maps reveal geographical context, while demographic datasets describe populations and neighborhoods.
+However, entrepreneurs must manually combine this information to determine whether a location supports their intended business.
+2.2 Uncertain customer demand
+A location near a large population does not necessarily attract substantial customer traffic.
+Customers may already frequent competing businesses. Physical accessibility, visibility, and the business category influence purchasing behavior.
+2.3 Financial uncertainty
+Simple financial calculators typically use fixed assumptions about revenue and expenses.
+In reality, customer demand, product costs, and competition can change significantly after opening.
+2.4 Physical property limitations
+A building may appear suitable in a listing but have limited parking, difficult access, an inconvenient layout, or insufficient usable space for the proposed operation.
+2.5 Limited decision support
+Entrepreneurs need more than a recommendation. They need to understand which factors drive financial risk, how uncertain the projections are, and whether adjusting their plans could improve the outcome.
+3. Project Objectives
+The primary objective is to develop an AI-assisted simulation platform that evaluates the financial viability of opening a business at a commercial property.
+Specific objectives are:
+Identify commercial properties matching an entrepreneur's requirements.
+Analyze their geographical, competitive, and physical environments.
+Estimate potential customer demand using a spatial market-share model.
+Simulate uncertain business performance over 24 months.
+Quantify profitability and downside risk.
+Compare alternative properties under consistent financial assumptions.
+Allow users to perform interactive what-if experiments.
+Generate transparent, evidence-supported recommendations.
+Research questions
+The project explores three applied modeling questions:
+RQ1: How do rental costs, nearby competition, population distribution, and physical accessibility affect modeled business viability?
+RQ2: How does uncertainty in customer demand and operational costs affect the probability of reaching monthly profitability?
+RQ3: Under which changes in market conditions or business assumptions would one property become preferable to another?
+The project does not claim to predict actual business success with independently established accuracy. Instead, it provides structured scenario analysis under explicit assumptions.
+4. Target Users
+Primary user: Aspiring small-business owner
+A person interested in opening a boba shop, café, restaurant, salon, or retail store.
+They may have a business idea but lack access to professional market analysis.
+They want to find suitable properties, understand risk, and make better-informed financial decisions.
+Secondary users: Future expansion
+Commercial brokers could use the platform to explain location suitability to potential tenants.
+Lenders and business advisors could use simulation reports as supporting context for evaluating proposed ventures.
+The hackathon MVP focuses on the aspiring small-business owner.
+5. Core User Experience
+Consider an entrepreneur who enters:
+"I want to open a boba shop in Houston, Texas. My maximum monthly rent is $6,000. I need parking, a reasonable amount of floor space, and a location with strong customer demand."
+Step 1: Understand requirements
+The AI extracts the business type, city, rent limit, property characteristics, and user preferences.
+The user can review and edit the interpreted requirements.
+Step 2: Find available properties
+The system searches eligible commercial lease listings and identifies up to ten candidate spaces.
+The properties appear as markers on an interactive map.
+Step 3: Investigate each property
+The agent gathers market and demographic information, discovers nearby competitors, and analyzes available aerial imagery and interior scans.
+Step 4: Estimate customer demand
+A location-based demand model estimates how much potential customer activity the proposed business might capture from nearby population areas.
+Step 5: Run the financial simulation
+For each property, the platform simulates 1,000 potential 24-month business trajectories.
+Step 6: Compare properties
+The dashboard displays expected outcomes, uncertainties, risk factors, and business requirements.
+Step 7: Experiment with alternatives
+The user changes rent, ticket price, startup investment, expected demand, or competitor assumptions.
+The system reruns the relevant calculations and visualizes how the decision changes.
+Step 8: Receive a recommendation
+The AI produces a comparison supported by model results, identifiable property evidence, and transparent assumptions.
+6. Data Sources and Integration
+6.1 CoStar — Commercial real estate information
+CoStar provides the property and market information needed to identify candidate locations.
+The current project design uses local HackPrinceton CoStar datasets containing commercial listing and property information.
+Listing records are joined with property records to retrieve relevant characteristics.
+Candidate selection will focus on active Houston commercial leases suitable for retail or ground-floor business operations.
+The system normalizes rent into a consistent monthly amount and excludes unsuitable listing categories.
+A property with unavailable rental information will be identified as having missing rent, not treated as free.
+Role in the model: Establishes property identity, location, area, rental costs, and the baseline physical and financial constraints.
+6.2 Vexcel — Aerial and exterior intelligence
+Vexcel provides aerial imagery and spatial extraction capabilities.
+The system will use available imagery and detection tools to investigate parking spaces, roads, and the surrounding physical environment.
+A vision model may provide explainable assessments of visibility and access.
+Role in the model: Produces spatial features that inform accessibility, attractiveness, or operational-capacity assumptions.
+An observed image feature should not automatically be interpreted as a validated causal effect on revenue. Its financial influence must be expressed through a documented model assumption.
+6.3 Matterport — Interior spatial intelligence
+Matterport provides available 3D scans and building interior information.
+Relevant information may include floor area, room dimensions, and spatial configuration.
+The application can embed a Matterport tour for the selected property.
+For applicable businesses, the system estimates practical capacity from usable space and business-specific operating requirements.
+Role in the model: Helps establish physical feasibility and operating-capacity constraints.
+The system must distinguish modeled seating or service capacity from legally authorized occupancy.
+6.4 U.S. Census — Demographic context
+Census data supports local population analysis.
+Potential inputs include residential population density, median household income, and age distribution.
+These characteristics support the estimation and explanation of business demand, but they do not establish the number of purchasing customers directly.
+6.5 CoStar employment information
+Available company employee counts help characterize daytime commercial activity.
+Resident and worker populations are treated as distinct demand components with appropriate safeguards against overlapping demand.
+6.6 OpenStreetMap — Competitor discovery
+OpenStreetMap identifies nearby businesses in relevant categories.
+For example, the platform can locate cafés and tea shops around a proposed boba location.
+Because OpenStreetMap usually lacks customer popularity data, the MVP uses neutral, configurable competitor-attractiveness assumptions.
+Yelp integration is a future enhancement when API access is available.
+7. Mathematical Modeling and Simulation Methodology
+The system uses a hybrid approach consisting of spatial demand estimation, a dynamic monthly business model, and Monte Carlo simulation.
+7.1 Model A — Huff spatial interaction model
+The Huff gravity model estimates the probability that customers in a particular geographical area choose one business over its competitors.
+The model assumes store choice depends on factors such as relative attractiveness and geographical distance.
+For each population zone, the system compares the proposed business with relevant competitors.
+The output is an estimated distribution of potential customer activity across those businesses.
+The new business is assigned an initial attractiveness based on configurable assumptions, business characteristics, and applicable property features.
+The result is converted into an estimated daily customer demand using calibrated purchase-rate assumptions.
+7.2 Model B — Operational capacity model
+Potential demand does not necessarily equal the number of customers that can be served.
+Operational capacity depends on business type.
+For cafés and boba shops, relevant constraints may include order-processing speed, staffing, preparation space, and seating turnover.
+For salons, customer capacity depends on the number of service stations, working hours, and average appointment duration.
+For restaurants, seating and table turnover may impose important capacity constraints.
+For the MVP, operational capacity will be approximated using editable business-specific assumptions rather than detailed queue simulation.
+7.3 Model C — Dynamic monthly business model
+The business simulation runs over 24 monthly time steps.
+Customer demand changes as the business develops.
+The model considers startup ramp-up, demand variation, and possible changes in competition.
+For each simulated month:
+Revenue = Daily customers × Average transaction value × Operating days
+Cost of goods = Revenue × Cost-of-goods percentage
+Operating profit = Revenue − Cost of goods − Rent − Labor − Other overhead
+The distinction between operating profit and investment payback is maintained throughout the platform.
+7.4 Model D — Monte Carlo simulation
+The Monte Carlo engine introduces uncertainty by randomly sampling selected business inputs.
+For each property, the system generates 1,000 possible financial trajectories over 24 months.
+The initial MVP treats rent, regular labor costs, and overhead as fixed baseline values.
+Uncertain variables include:
+Customer demand
+Average transaction value
+Customer-acquisition ramp-up
+Cost-of-goods percentage
+New competitor arrivals
+These variables are sampled from documented distributions.
+For example, a triangular distribution can represent uncertainty around a plausible minimum, most likely value, and maximum transaction amount.
+Bounded distributions are used where necessary to prevent physically impossible or financially invalid values.
+Each trajectory calculates operating profit for every month.
+The final results are aggregated across all runs.
+7.5 Key simulation metrics
+Month-12 operating profitability probability
+The percentage of simulation runs in which monthly operating profit is positive in month 12.
+First profitable month
+The earliest month in a run with positive operating profit. The platform can additionally report the first sustained profitable period.
+Month-12 P10, P50, and P90
+The 10th, 50th, and 90th percentiles of simulated month-12 operating profit.
+Break-even customer demand
+The minimum average number of paying customers required per day to cover modeled operating expenses.
+Investment payback period
+The month when accumulated business cash flows recover the modeled upfront investment, when startup cost information is available.
+Principal risk factors
+The assumptions that have the largest influence on the simulation result.
+7.6 Scenario and sensitivity analysis
+The user can examine alternative scenarios by adjusting one or more input variables.
+Examples include increasing monthly rent, reducing expected customers, changing the average transaction amount, and introducing an additional competitor.
+The simulation reruns using the changed inputs.
+For valid comparisons, random inputs should be coordinated across properties so differences are attributable primarily to property conditions, not unrelated simulation noise.
+8. Proposed Unique Feature — The Decision Flip Engine
+The proposed signature feature is a Decision Flip Engine.
+Instead of simply stating which property currently ranks highest, the system identifies conditions under which that recommendation would change.
+For example:
+"Property A performs better under the current assumptions, but Property B becomes preferable if demand falls beyond a certain threshold."
+Or:
+"Reducing the rent of Property A could change its relative financial attractiveness, even though Property B offers stronger physical accessibility."
+The system can investigate changes in:
+Rent
+Customer demand
+Average transaction values
+Operating costs
+New competitors
+Physical or operational capacity assumptions
+The DeepAgent will identify influential variables and call simulation tools to investigate their effects.
+The dashboard can then visualize which scenarios favor each location.
+Why this feature matters: It converts the platform from a static property-ranking system into an interactive decision laboratory.
+An entrepreneur can learn not only which property appears preferable, but how robust that recommendation is to uncertainty.
+9. AI Agent Design
+The platform uses LangChain Deep Agents to coordinate the analysis.
+The agent is responsible for research planning, tool selection, investigation, and explanation.
+Numerical calculations are performed by deterministic Python functions, not generated directly by the language model.
+Agent workflow
+Planning: Interpret the user's goal and create a structured analysis plan.
+Property discovery: Search commercial lease listings using CoStar data.
+Market investigation: Gather nearby competitor and population information.
+Spatial investigation: Retrieve and analyze selected Vexcel imagery and Matterport information.
+Model execution: Invoke demand estimation and Monte Carlo simulation functions.
+Critical analysis: Inspect surprising or unfavorable results.
+Replanning: Adjust research steps when data is missing or results are insufficient.
+Recommendation: Produce an evidence-supported comparison.
+Required adaptive behavior
+If fewer than five suitable properties are found, the agent can propose relaxing selected criteria, while explicitly distinguishing alternatives that exceed the user's original budget.
+If a property has an unexpectedly poor result, the agent can investigate whether rent, competition, limited access, or modeled capacity is responsible.
+If an external dataset is unavailable, the agent reports the limitation and uses available cached or alternative information.
+The application's interface streams the agent's progress so judges and users can see meaningful analytical actions.
+A deterministic fallback pipeline ensures that the core demonstration can complete if agent execution fails.
+10. User Interface Design
+The interface is organized into five functional areas.
+A. Business search
+A natural-language search box allows the user to describe the proposed business.
+Editable fields display the interpreted requirements.
+B. Commercial property explorer
+An interactive map displays shortlisted sites.
+Selecting a property reveals rental information, physical characteristics, nearby businesses, and available spatial evidence.
+C. Property intelligence
+Users can examine:
+Property and market details
+Vexcel aerial imagery
+Available Matterport 3D tours
+Competitor and demographic information
+Estimated customer demand
+Data-source and confidence labels
+D. Financial simulation laboratory
+A dashboard displays monthly profitability trajectories, uncertainty ranges, break-even calculations, and simulation assumptions.
+Interactive controls allow the user to change business conditions and rerun the model.
+E. Property comparison and decision report
+Users compare shortlisted properties across financial outcomes, physical constraints, estimated market demand, and risks.
+The AI provides an evidence-backed recommendation and a printable one-page summary.
+11. System Architecture
+Frontend: React, Vite, MapLibre or Leaflet, Recharts, and Matterport embed.
+Backend: Python and FastAPI.
+Agent framework: LangChain Deep Agents with an OpenRouter-compatible language model.
+Analysis tools: Independent Python modules for CoStar, Vexcel, Matterport, OpenStreetMap, and Census processing.
+Simulation: NumPy-based Huff demand and Monte Carlo modeling modules.
+Communication: REST API and Server-Sent Events for agent progress.
+Data handling: Locally cached JSON API responses and locally indexed CoStar data.
+Deployment: Local execution for the hackathon demonstration.
+The architecture separates data retrieval, interpretation, modeling, and presentation so each component can be tested independently.
+12. Validation and Reliability
+The platform must validate both its data processing and simulation behavior.
+Data validation
+Verify correct property identifiers across CoStar, Matterport, and Vexcel sources.
+Check rental conversion calculations.
+Detect missing or invalid property measurements.
+Confirm units used for interior floor areas.
+Flag unavailable spatial evidence rather than generating unsupported claims.
+Simulation validation
+Confirm that the same random seed produces reproducible results.
+Verify that zero customer demand results in operating losses when fixed costs are positive.
+Check that increasing rent does not improve operating profit when other inputs remain unchanged.
+Verify that customer-choice probabilities sum to one for a modeled market.
+Confirm that increased competition reduces the proposed business's modeled market share under otherwise unchanged assumptions.
+Sensitivity analysis
+Run controlled experiments in which important parameters are changed.
+For example, evaluate how simulated profitability responds to lower customer demand and higher rent.
+Uncertainty transparency
+Clearly identify the origin of each major input.
+Use labels such as:
+Verified property data
+Observed spatial information
+External benchmark
+User-supplied assumption
+AI-generated estimate
+Missing information
+The platform will distinguish assumptions from measured quantities and avoid claiming that unvalidated profitability probabilities represent real-world predictive accuracy.
+13. Expected Results and Evaluation
+The MVP should produce a shortlist of five to ten commercial properties for the target Houston search, subject to available qualifying listings.
+Each property's result should include:
+Monthly rental cost
+Property size
+Estimated customer demand
+Operational-capacity estimate where supported
+Profitability probability
+Financial outcome percentiles
+Break-even requirements
+Most influential risk factors
+Available aerial and interior evidence
+The main evaluation is whether the application can complete a credible end-to-end analysis.
+Technical success will be evaluated through data integration, functioning simulation, agent behavior, model consistency, and a clear interactive demonstration.
+Without independent historical business outcomes, the project will not claim that its predicted probabilities have been externally validated.
+14. Hackathon Implementation Plan
+The project is designed for a two-person team with a tightly scoped MVP.
+Developer 1 — Data and simulation
+Responsibilities:
+CoStar data retrieval and filtering
+Rental normalization
+Census and competitor processing
+Huff demand model
+Monte Carlo engine
+Simulation validation
+Financial results API
+Developer 2 — AI and interface
+Responsibilities:
+DeepAgent orchestration
+Vexcel and Matterport integration
+Map and property interface
+Agent progress visualization
+Simulation and comparison dashboard
+Demonstration workflow
+Both developers collaborate on final integration, fallback behavior, and the pitch.
+Implementation priorities
+Priority 1 — Complete the core financial model
+Replace all placeholder profitability values with actual simulation results.
+Priority 2 — Produce a complete property result
+Connect verified rental and spatial information to the simulation assumptions.
+Priority 3 — Display risk and comparison visualizations
+Show financial outcome distributions, break-even metrics, and major reasons behind differences.
+Priority 4 — Demonstrate agentic investigation
+Show the DeepAgent planning tasks, calling tools, investigating a problem, and explaining findings.
+Priority 5 — Implement the Decision Flip Engine
+Introduce a focused what-if comparison that demonstrates how decisions change under uncertainty.
+Priority 6 — Complete demo reliability
+Cache the golden-path request, test offline fallback, prepare the two-minute walkthrough, and ensure no API secrets are exposed.
+15. HackPrinceton Track Strategy
+Required track — Business and Enterprise
+BeforeYouSign addresses financial risk, business planning, and commercial-location evaluation.
+It aligns directly with tools designed to improve business management and entrepreneurial decision-making.
+CoStar — Inside and Out: AI for the Built World
+The project combines commercial property information, Vexcel aerial imagery, and Matterport spatial information.
+Its strongest differentiator is connecting physical property evidence to quantitative business outcomes rather than displaying each data source independently.
+LangChain — Best Use of DeepAgents
+The platform features an agent that creates investigation plans, calls analytical tools, adapts to missing information, and performs targeted follow-up analysis.
+Amazon — Best Practical AI Innovation
+The application has a defined target user, a consequential real-world problem, and a practical working prototype.
+The agent performs meaningful multi-step work, while users receive understandable quantitative outputs.
+Peri — Forward Deployed Challenge
+This track is an optional opportunity if the team consults an actual business during the hackathon.
+Eligibility requires documenting the business name, the consulted person's name and role, and evidence of the consultation.
+Best Overall Hack
+The project is automatically considered for this award through its main-track submission.
+16. Limitations
+BeforeYouSign is a preliminary business decision-support tool.
+Its financial projections depend on assumptions about customer purchasing behavior, expenses, competition, and local conditions.
+Residential and daytime population are indirect indicators of potential demand, not direct customer counts.
+Aerial imagery cannot by itself establish actual customer traffic.
+Interior measurements cannot automatically establish legally permitted occupancy.
+The platform therefore displays uncertainty, supports assumption changes, and encourages further due diligence before committing to a lease.
+17. Future Extensions
+Possible future developments include:
+Expansion to Los Angeles and other cities
+Agent-based consumer simulations
+Detailed queue and service-capacity modeling
+More sophisticated transportation and walking-access models
+Historical calibration with real participating businesses
+More comprehensive startup financing and cash-flow analysis
+Broker collaboration and professional report generation
+Advanced scenario comparison and automated risk mitigation recommendations
+These are extensions rather than requirements for the initial hackathon prototype.
+18. Conclusion
+BeforeYouSign is a research-informed, AI-powered commercial business simulation platform that combines the physical reality of a property with the financial uncertainty of operating a business.
+Its central innovation is connecting commercial property data, aerial observations, interior spatial information, customer-demand modeling, and probabilistic simulation into one decision-making workflow.
+Instead of asking entrepreneurs to trust a single estimate, BeforeYouSign allows them to investigate evidence, explore alternative futures, and understand what would change their decision.
+BeforeYouSign — Don't just find a location. Simulate its future.
+
+

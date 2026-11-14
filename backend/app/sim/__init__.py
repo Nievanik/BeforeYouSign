@@ -3,6 +3,7 @@ import numpy as np
 
 from app.models import Band, MonthBand, PeopleNearby, RiskFactor, SimResult, Site
 from app.sim import huff, montecarlo
+from app.sim.risk import extract_risk_factors
 
 PROFILE_FIELDS = {
     "typicalDailyCustomers", "ticket", "ticketSd", "cogsMin", "cogsMax", "laborFixedMonthly", "laborVariablePct",
@@ -16,14 +17,21 @@ DRIVE_HEAVY, POOR_ACCESS, ACCESS_PENALTY = 0.85, 2, 0.85
 NEW_WINDOW_YEARS = 0.5  # shortcut: Yelp "hot and new" ~ last 6 months; label the rate as an estimate
 BUCKETS = 5
 # random input -> (direction that hurts, label); +1 = higher is worse
-RISKS = {"customers": (-1, "fewer customers than expected"), "ticket": (-1, "lower spend per visit"),
-         "rampMonths": (1, "slow ramp-up"), "cogs": (1, "high cost of goods"),
-         "newCompetitors": (1, "new competitors opening")}
+RISKS = {
+    "customers": (-1, "fewer customers than expected"),
+    "ticket": (-1, "lower spend per visit"),
+    "rampMonths": (1, "slow ramp-up"),
+    "cogs": (1, "high cost of goods"),
+    "newCompetitors": (1, "new competitors opening"),
+}
 
 
 def _worker_points(lon: float):
     from app.tools.costar import _workers
-    return _workers("CA" if lon < -110 else "TX")  # the kit only covers Houston and Los Angeles
+    try:
+        return _workers("CA" if lon < -110 else "TX")  # the kit only covers Houston and Los Angeles
+    except FileNotFoundError:
+        return []
 
 
 def check_overrides(overrides: dict) -> None:
@@ -139,3 +147,13 @@ def simulate(site: Site, profile: dict, overrides: dict | None = None, seed: int
                      "access": access, "notes": notes},
         seed=seed,
     )
+
+
+__all__ = [
+    "PROFILE_FIELDS",
+    "SWITCHES",
+    "OVERRIDE_KEYS",
+    "check_overrides",
+    "simulate",
+    "extract_risk_factors",
+]
