@@ -160,7 +160,8 @@ class Run:
                 risks = "; ".join(f.text for f in r.riskFactors) or "none"
                 return (f"{s.address}{' (what-if ' + str(overrides) + ')' if overrides else ''}: "
                         f"{r.pProfitableBy12:.0%} chance of profit by month 12, ~{r.expectedCustomers:.0f} customers/day "
-                        f"expected vs {r.breakEvenCustomers:.0f} needed, rent {r.rentShare:.0%} of revenue. Risks: {risks}")
+                        f"expected vs {r.breakEvenCustomers:.0f} needed, rent {r.rentShare:.0%} of revenue. Risks: {risks}"
+                        + (f". DATA GAPS (say so in the report): {'; '.join(s.gaps)}" if s.gaps else ""))
             label = f"What-if on {site_id}: {overrides}" if overrides else f"Simulating 1,000 futures for {site_id}"
             return run.step("sim", label, site_id, go)
 

@@ -86,7 +86,8 @@ def simulate(site: Site, profile: dict, overrides: dict | None = None, seed: int
     else:
         # shortcut: nothing to calibrate against, so assume a typical store; upgrade with a city-wide visit rate
         mean_site = float(p["typicalDailyCustomers"])
-        notes.append("no competitors nearby: typical demand assumed")
+        notes.append("competitor data missing: typical demand assumed" if any(g.startswith("no competitors") for g in site.gaps)
+                     else "no competitors nearby: typical demand assumed")
 
     hot_new = sum(c.isNew for c in comps)
     rate = hot_new / NEW_WINDOW_YEARS if hot_new else p["newCompetitorRatePerYear"]

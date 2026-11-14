@@ -58,3 +58,22 @@ def test_parking_unclear_when_boxes_overlap_or_are_not_rows():
     assert vexcel.estimate_spaces(PARCEL, [_box(5, 5, 40, 40)]) is None  # blob, not a row
     assert vexcel.estimate_spaces(PARCEL, [_box(80, 5, 70, 8)]) is None  # mostly off the parcel
     assert vexcel.estimate_spaces(PARCEL, []) == 0
+
+
+def test_osm_falls_back_to_a_mirror(tmp_path, monkeypatch):
+    from app import cache, config
+    monkeypatch.setattr(cache, "CACHE_DIR", tmp_path)
+    monkeypatch.setattr(config, "OFFLINE", False)
+    tried = []
+
+    def fake(method, url, **kw):
+        tried.append(url)
+        if len(tried) == 1:
+            raise ConnectionRefusedError("refused")
+        return type("R", (), {"raise_for_status": lambda self: None,
+                              "json": lambda self: {"elements": [{"lat": 29.76, "lon": -95.37,
+                                                                 "tags": {"name": "Tea Bar", "amenity": "cafe"}}]}})()
+
+    monkeypatch.setattr(osm.http, "request", fake)
+    found = osm.competitors(29.76, -95.37, "boba")
+    assert tried[:2] == osm.OVERPASS[:2] and [c.name for c in found] == ["Tea Bar"]
