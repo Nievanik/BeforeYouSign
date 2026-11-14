@@ -1,0 +1,5 @@
+.env
+.env.*
+!.env.example
+Hackathon/
+.DS_Store
