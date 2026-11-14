@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import AgentLogPanel, { type AgentStep } from './components/AgentLogPanel'
 import QueryBox from './components/QueryBox'
+import Report from './components/Report'
 import SiteCard from './components/SiteCard'
 import SiteMap from './components/SiteMap'
 import type { BusinessBrief, RunResult, Site } from './types'
@@ -11,6 +12,7 @@ export default function App() {
   const [selectedSiteId, setSelectedSiteId] = useState<string | undefined>()
   const [loading, setLoading] = useState(false)
   const [steps, setSteps] = useState<AgentStep[]>([])
+  const [showReport, setShowReport] = useState(false)
 
   // Load initial golden fixture on start
   useEffect(() => {
@@ -123,60 +125,57 @@ export default function App() {
   }
 
   return (
-    <>
-      {/* 1. Header with Query Box */}
-      <header className="app-header">
-        <QueryBox
-          brief={run?.brief}
-          onSearch={handleSearch}
-          loading={loading}
-        />
+    <div className="app-layout">
+      {/* Top bar: brand and decision report */}
+      <header className="app-topbar no-print">
+        <div className="topbar-brand">
+          <span className="brand-logo">📍 BeforeYouSign</span>
+        </div>
+        {run && (
+          <div className="topbar-actions">
+            <button
+              type="button"
+              className="decision-report-btn"
+              onClick={() => setShowReport(true)}
+              disabled={loading}
+              title="Open one-page executive report ready to print or export as PDF"
+            >
+              📄 Decision Report (PDF)
+            </button>
+          </div>
+        )}
       </header>
 
-      {/* 2. Fullscreen Interactive Map with Sites + Competitor Markers */}
-      <SiteMap
-        sites={run?.sites ?? []}
-        selectedSiteId={selectedSiteId}
-        onSelectSite={setSelectedSiteId}
-      />
+      {/* Map, ranked site cards (fill in live as sites finish), agent log */}
+      <main className="main-content">
+        {/* floating query box over the map; shows the parsed brief as chips */}
+        <div className="app-header no-print">
+          <QueryBox brief={run?.brief} onSearch={handleSearch} loading={loading} />
+        </div>
+        <SiteMap sites={run?.sites ?? []} selectedSiteId={selectedSiteId} onSelectSite={setSelectedSiteId} />
+        {run && (
+          <aside className="sites no-print">
+            <div className="sites-header">
+              Candidate Properties ({run.sites.length})
+              {loading && <span className="streaming-dot">● streaming…</span>}
+            </div>
+            {run.sites.map((s, i) => (
+              <SiteCard key={s.id} site={s} rank={i + 1} />
+            ))}
+          </aside>
+        )}
+        <div className="no-print">
+          <AgentLogPanel steps={steps.length > 0 ? steps : undefined} />
+        </div>
+      </main>
 
-      {/* 3. Ranked Candidate Site Cards (fill in progressively as each site finishes) */}
-      {run && (
-        <aside className="sites">
-          <div className="sites-header">
-            Candidate Properties ({run.sites.length})
-            {loading && <span style={{ marginLeft: 6, color: '#2563eb' }}>● streaming…</span>}
-          </div>
-          {run.sites.map((s, i) => (
-            <SiteCard key={s.id} site={s} rank={i + 1} />
-          ))}
-        </aside>
-      )}
+      {showReport && run && <Report run={run} onClose={() => setShowReport(false)} />}
 
-      {/* 4. Agent Reasoning Log Panel */}
-      <AgentLogPanel steps={steps.length > 0 ? steps : undefined} />
-
-      {/* Error alert toast */}
       {error && (
-        <div
-          role="alert"
-          style={{
-            position: 'absolute',
-            top: 14,
-            right: 14,
-            background: '#fee2e2',
-            color: '#991b1b',
-            border: '1px solid #f87171',
-            borderRadius: 6,
-            padding: '8px 14px',
-            fontSize: 13,
-            zIndex: 100,
-            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-          }}
-        >
+        <div role="alert" className="error-alert no-print">
           {error}
         </div>
       )}
-    </>
+    </div>
   )
 }

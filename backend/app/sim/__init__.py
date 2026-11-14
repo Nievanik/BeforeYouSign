@@ -30,7 +30,7 @@ def _worker_points(lon: float):
     from app.tools.costar import _workers
     try:
         return _workers("CA" if lon < -110 else "TX")  # the kit only covers Houston and Los Angeles
-    except FileNotFoundError:
+    except Exception:
         return []
 
 

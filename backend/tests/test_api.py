@@ -102,3 +102,16 @@ def test_auto_mode_run_is_not_recorded(monkeypatch, tmp_path):
     monkeypatch.setattr(main, "run_agent", fake_agent)
     client.get(f"/api/runs/{client.post('/api/analyze', json={'query': 'boba'}).json()['runId']}/events")
     assert not (tmp_path / "runs").exists()
+def test_simulate_site_with_overrides():
+    site = client.get("/api/runs/golden").json()["sites"][0]
+    # base simulation
+    res1 = client.post("/api/simulate", json={"site": site, "businessType": "boba", "overrides": {}}).json()
+    assert 0 <= res1["pProfitableBy12"] <= 1
+    assert len(res1["monthlyBands"]) == 24
+    # what-if override with lower rent and higher ticket
+    res2 = client.post("/api/simulate", json={
+        "site": site,
+        "businessType": "boba",
+        "overrides": {"rentMonthly": 2000, "ticket": 12.0}
+    }).json()
+    assert res2["pProfitableBy12"] >= res1["pProfitableBy12"]

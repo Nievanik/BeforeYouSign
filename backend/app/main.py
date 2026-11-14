@@ -6,14 +6,18 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 
+from typing import Any
+
 from fastapi import APIRouter, FastAPI, HTTPException, Response, status
 from fastapi.sse import EventSourceResponse, ServerSentEvent
 from pydantic import BaseModel
 
 from app import config
+from app.agent.report import generate_report
 from app.agent.run import ranked, run_agent
 from app.cache import CacheMiss, cached
-from app.models import BusinessBrief, RunResult
+from app.models import BusinessBrief, RunResult, SimResult, Site
+from app.sim import simulate
 from app.tools import costar, matterport, vexcel
 
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures"
@@ -120,6 +124,41 @@ def replay(run_id: str, rec: dict, recording: dict):
     rec["events"].append(("done", {"runId": run_id}))
 
 
+def _get_profile(business_type: str) -> dict:
+    profiles = getattr(config, "BUSINESS_PROFILES", {})
+    if business_type in profiles:
+        return profiles[business_type]
+    from app.agent.brief import profile_for
+    p, _ = profile_for(business_type)
+    return p
+
+
+class SimulateRequest(BaseModel):
+    site: Site
+    businessType: str = "boba"
+    overrides: dict[str, Any] = {}
+    seed: int = 7
+
+
+@api.post("/simulate", response_model=SimResult)
+def simulate_site(req: SimulateRequest):
+    try:
+        profile = _get_profile(req.businessType)
+        return simulate(req.site, profile, req.overrides, seed=req.seed)
+    except Exception as e:
+        raise HTTPException(400, f"simulation failed: {e}")
+
+
+class ReportRequest(BaseModel):
+    brief: BusinessBrief
+    sites: list[Site]
+
+
+@api.post("/report")
+def make_report(req: ReportRequest):
+    return {"markdown": generate_report(req.brief, req.sites)}
+
+
 @api.get("/health")
 def health():
     return {"ok": True, "offline": config.OFFLINE}
@@ -157,7 +196,10 @@ async def run_events(run_id: str):
 @api.get("/runs/{run_id}", response_model=RunResult)
 def get_run(run_id: str):
     if run_id == "golden":
-        return json.loads((FIXTURES / "golden_run.json").read_text())
+        run = RunResult(**json.loads((FIXTURES / "golden_run.json").read_text()))
+        if not run.report or "placeholder" in run.report:
+            run.report = generate_report(run.brief, run.sites)
+        return run
     rec = RUNS.get(run_id)
     if not rec:
         raise HTTPException(404, "unknown run")
