@@ -148,22 +148,22 @@ export default function App() {
 
       {/* Map, ranked site cards (fill in live as sites finish), agent log */}
       <main className="main-content">
-        {/* floating query box over the map; shows the parsed brief as chips */}
-        <div className="app-header no-print">
-          <QueryBox brief={run?.brief} onSearch={handleSearch} loading={loading} />
-        </div>
         <SiteMap sites={run?.sites ?? []} selectedSiteId={selectedSiteId} onSelectSite={setSelectedSiteId} />
-        {run && (
-          <aside className="sites no-print">
-            <div className="sites-header">
-              Candidate Properties ({run.sites.length})
-              {loading && <span className="streaming-dot">● streaming…</span>}
-            </div>
-            {run.sites.map((s, i) => (
-              <SiteCard key={s.id} site={s} rank={i + 1} />
-            ))}
-          </aside>
-        )}
+        {/* one left column, so the site list always starts below the query box, whatever its height */}
+        <div className="left-panel no-print">
+          <QueryBox brief={run?.brief} onSearch={handleSearch} loading={loading} />
+          {run && (
+            <aside className="sites">
+              <div className="sites-header">
+                Candidate Properties ({run.sites.length})
+                {loading && <span className="streaming-dot">● streaming…</span>}
+              </div>
+              {run.sites.map((s, i) => (
+                <SiteCard key={s.id} site={s} rank={i + 1} />
+              ))}
+            </aside>
+          )}
+        </div>
         <div className="no-print">
           <AgentLogPanel steps={steps.length > 0 ? steps : undefined} />
         </div>
