@@ -58,6 +58,7 @@ Keep `serviceType`: TripleNet rent excludes taxes, insurance and CAM, so add `co
 | `visibilityScore` | 1–5 | LLM vision on ortho + oblique, plus `visibilityReason` |
 | `roadAccessScore` | 1–5 | LLM vision, plus `roadAccessReason` |
 | `collection` | str | `metadata.collection` (capture date for credibility) |
+| `parkingSeen` | int? | spaces on the parcel from `elements/detect` "parking space" boxes: each box is a **row**, spaces = row length ÷ 2.75 m. `null` when boxes overlap, aren't row-shaped, or sit off the parcel (diagonal lots). **Display only**, never in the odds |
 | `imageUrl` | str | `/api/sites/{id}/aerial.jpg` |
 
 ## Interior (Matterport)

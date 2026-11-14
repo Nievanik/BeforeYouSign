@@ -32,3 +32,29 @@ def test_seats_subtract_back_of_house(monkeypatch):
 def test_building_scan_uses_listed_size(monkeypatch):
     _fake_model(monkeypatch, 8000, [])
     assert matterport.interior("x", listed_sqft=1000).estSeats == 40  # 0.6*1000/15, not 0.6*8000/15
+
+
+
+def _box(x_m, y_m, w_m, h_m, lat=29.7):
+    import math
+    k = 111_320 * math.cos(math.radians(lat))
+    x0, y0 = x_m / k, lat + y_m / 111_320
+    x1, y1 = x0 + w_m / k, y0 + h_m / 111_320
+    return f"POLYGON(({x0} {y0},{x1} {y0},{x1} {y1},{x0} {y1},{x0} {y0}))"
+
+
+PARCEL = _box(0, 0, 100, 100)
+
+
+def test_parking_rows_counted_by_length():
+    from app.tools import vexcel
+    rows = [_box(5, 5, 71.3, 8), _box(5, 30, 60.2, 6.9)]  # 6003 Bellaire's two rows
+    assert vexcel.estimate_spaces(PARCEL, rows) == 48
+
+
+def test_parking_unclear_when_boxes_overlap_or_are_not_rows():
+    from app.tools import vexcel
+    assert vexcel.estimate_spaces(PARCEL, [_box(5, 5, 70, 8), _box(10, 6, 60, 8)]) is None  # overlapping
+    assert vexcel.estimate_spaces(PARCEL, [_box(5, 5, 40, 40)]) is None  # blob, not a row
+    assert vexcel.estimate_spaces(PARCEL, [_box(80, 5, 70, 8)]) is None  # mostly off the parcel
+    assert vexcel.estimate_spaces(PARCEL, []) == 0

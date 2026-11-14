@@ -1,1 +1,12 @@
 html, body, #root { margin: 0; height: 100%; }
+body { font: 14px/1.4 system-ui, sans-serif; }
+.sites { position: absolute; top: 12px; left: 12px; bottom: 12px; width: min(360px, calc(100% - 32px)); overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+.card { background: #fff; border-radius: 8px; padding: 12px; box-shadow: 0 1px 4px rgb(0 0 0 / 0.2); }
+.card h2 { font-size: 16px; margin: 0 0 4px; }
+.card p { margin: 4px 0; }
+.card .odds { font-weight: 600; }
+.card .gaps { color: #8a5a00; font-size: 12px; }
+.card figure { margin: 8px 0; }
+.card img { width: 100%; border-radius: 4px; display: block; }
+.card figcaption { font-size: 12px; color: #444; margin-top: 4px; }
+@media (max-width: 600px) { .sites { top: auto; height: 45%; left: 16px; right: 16px; width: auto; } }

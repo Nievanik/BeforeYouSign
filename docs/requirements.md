@@ -52,7 +52,7 @@ The MVP serves the primary user only.
 
 ### F5. Inspect from above (Vexcel)
 - `property/extract` at the site's lat/lon (WKT is **lon lat**, always `srid=4326`). 404 = no parcel; fall back to an 80 m square.
-- `ortho/extract` image of the parcel. (No parking count: `elements/detect` on one snapshot missed most empty stalls. Car dependence comes from Census commute data; site access from the vision score.)
+- `ortho/extract` image of the parcel with detected parking rows outlined (`elements/detect`), plus an estimated space count when the rows are clean. Shown to the user only: one photo, possibly a shared lot. Car dependence for the odds comes from Census commute data; site access from the vision score.
 - Vision model (OpenRouter) reads the ortho and oblique images → storefront visibility and road access (scored from 1 to 5 with a one-line reason).
 - Retry on 429 with backoff (as in `Hackathon/API_docs/vexcel-kit/vexcel_quickstart.py`).
 

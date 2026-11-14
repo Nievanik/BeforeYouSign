@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import SiteCard from './components/SiteCard'
 import SiteMap from './components/SiteMap'
 import type { RunResult } from './types'
 
@@ -17,6 +18,13 @@ export default function App() {
   return (
     <>
       <SiteMap sites={run?.sites ?? []} />
+      {run && (
+        <aside className="sites">
+          {run.sites.map((s, i) => (
+            <SiteCard key={s.id} site={s} rank={i + 1} />
+          ))}
+        </aside>
+      )}
       {error && <div role="alert" style={{ position: 'absolute', top: 12, left: 12, background: '#fee', padding: 8 }}>{error}</div>}
     </>
   )

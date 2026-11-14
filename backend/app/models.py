@@ -23,6 +23,7 @@ class Aerial(BaseModel):
     roadAccessScore: Optional[int] = None  # 1-5
     roadAccessReason: Optional[str] = None
     collection: Optional[str] = None
+    parkingSeen: Optional[int] = None  # from parking rows detected on the parcel in one photo; null = count unclear (areas still outlined); display only
     imageUrl: str
 
 

@@ -32,7 +32,8 @@ def aerial_jpg(site_id: str):
     site = costar.get_site(site_id)
     if not site:
         raise HTTPException(404, "unknown site")
-    return Response(vexcel.ortho_jpeg(vexcel.parcel(site.lat, site.lon)["wkt"]), media_type="image/jpeg")
+    wkt = vexcel.parcel(site.lat, site.lon)["wkt"]
+    return Response(vexcel.ortho_jpeg(wkt, vexcel.detect_parking(wkt)), media_type="image/jpeg")
 
 
 app.include_router(api)

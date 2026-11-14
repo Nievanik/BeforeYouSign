@@ -57,7 +57,8 @@ def main():
         print(f"  competitors: {comp} within 1 mi ({len(s.competitors)} places incl. complements)"
               + (f", nearest {s.competitors[0].name} {s.competitors[0].distanceMi} mi" if s.competitors else ""))
         if s.aerial:
-            print(f"  aerial: parcel + image ({s.aerial.collection})")
+            seen = f"~{s.aerial.parkingSeen}" if s.aerial.parkingSeen is not None else "count unclear"
+            print(f"  aerial: parking on the parcel {seen} ({s.aerial.collection})")
             if s.aerial.visibilityScore:
                 print(f"  vision: visibility {s.aerial.visibilityScore}/5 ({s.aerial.visibilityReason}); "
                       f"access {s.aerial.roadAccessScore}/5 ({s.aerial.roadAccessReason})")

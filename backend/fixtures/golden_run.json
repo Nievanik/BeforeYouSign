@@ -12,82 +12,209 @@
   },
   "sites": [
     {
-      "id": "L1001-S1",
-      "listingId": 1001,
-      "propertyId": 5001,
-      "address": "2416 Westheimer Rd",
-      "lat": 29.7425,
-      "lon": -95.4105,
-      "sizeSqft": 1400,
-      "rentMonthly": 4900,
-      "rentPsfYear": 42.0,
+      "id": "L20031202-S21327553",
+      "listingId": 20031202,
+      "propertyId": 353482,
+      "address": "6003 Bellaire Blvd",
+      "lat": 29.704963,
+      "lon": -95.487373,
+      "sizeSqft": 1885.0,
+      "rentMonthly": 2544.75,
+      "rentPsfYear": 16.2,
       "serviceType": "TripleNet",
       "spaceUse": "Retail",
-      "photoUrl": null,
-      "matterportModelId": "SxQL3iGyoDo",
+      "photoUrl": "https://ahprd1cdn.csgpimgs.com/i2/IfQ98pwzX2WpIPrxt7pDoCR68VLbvyu_ZKvIa_lYtlo/113/image.jpg",
+      "matterportModelId": "BoqDzrD8JLh",
       "aerial": {
-        "parcelWkt": "POLYGON((-95.4109 29.7422,-95.4101 29.7422,-95.4101 29.7428,-95.4109 29.7428,-95.4109 29.7422))",
-        "visibilityScore": 4,
-        "visibilityReason": "Corner lot facing Westheimer, storefront visible from both directions",
-        "roadAccessScore": 4,
-        "roadAccessReason": "Two curb cuts, right-in from the main road",
-        "collection": "2025 Houston ortho",
-        "imageUrl": "/api/sites/L1001-S1/aerial.jpg"
+        "parcelWkt": "MULTIPOLYGON (((-95.4875574 29.7053385, -95.4868093 29.7053453, -95.4867983 29.7046036, -95.4875486 29.7045953, -95.4875574 29.7053385)))",
+        "visibilityScore": null,
+        "visibilityReason": null,
+        "roadAccessScore": null,
+        "roadAccessReason": null,
+        "collection": "us-tx-houstonr2-2023",
+        "parkingSeen": 48,
+        "imageUrl": "/api/sites/L20031202-S21327553/aerial.jpg"
       },
       "interior": {
-        "floorAreaSqft": 1380,
+        "floorAreaSqft": 2278.1,
         "rooms": [
           {
-            "label": "Kitchen",
-            "areaSqft": 320,
-            "widthFt": 16,
-            "depthFt": 20
-          },
-          {
-            "label": "Restroom",
-            "areaSqft": 60,
-            "widthFt": 6,
-            "depthFt": 10
+            "label": "Warehouse",
+            "areaSqft": 1974.7,
+            "widthFt": 74.1,
+            "depthFt": 28.8
           }
         ],
-        "estSeats": 66,
-        "tourUrl": "https://my.matterport.com/show/?m=SxQL3iGyoDo"
+        "estSeats": 20,
+        "tourUrl": "https://my.matterport.com/show/?m=BoqDzrD8JLh"
       },
       "competitors": [
         {
-          "name": "Tea Lab",
-          "kind": "competitor",
-          "lat": 29.7441,
-          "lon": -95.4132,
-          "distanceMi": 0.19,
-          "rating": null,
-          "reviewCount": null,
-          "isNew": false,
-          "attractiveness": 3.1,
-          "source": "osm"
-        },
-        {
-          "name": "Bubble Spot",
-          "kind": "competitor",
-          "lat": 29.739,
-          "lon": -95.406,
-          "distanceMi": 0.36,
-          "rating": null,
-          "reviewCount": null,
-          "isNew": false,
-          "attractiveness": 3.1,
-          "source": "osm"
-        },
-        {
-          "name": "Montrose Cinema",
+          "name": "SER-Ni\u00f1os Elementary II",
           "kind": "complement",
-          "lat": 29.743,
-          "lon": -95.409,
-          "distanceMi": 0.1,
+          "lat": 29.7067551,
+          "lon": -95.485765,
+          "distanceMi": 0.157,
           "rating": null,
           "reviewCount": null,
           "isNew": false,
-          "attractiveness": 3.1,
+          "attractiveness": 3.045,
+          "source": "osm"
+        },
+        {
+          "name": "Mistral Early Childhood Center",
+          "kind": "complement",
+          "lat": 29.7013475,
+          "lon": -95.4917296,
+          "distanceMi": 0.362,
+          "rating": null,
+          "reviewCount": null,
+          "isNew": false,
+          "attractiveness": 3.045,
+          "source": "osm"
+        },
+        {
+          "name": "Ser - Ninos Charter Elementary School",
+          "kind": "complement",
+          "lat": 29.7091191,
+          "lon": -95.4807751,
+          "distanceMi": 0.489,
+          "rating": null,
+          "reviewCount": null,
+          "isNew": false,
+          "attractiveness": 3.045,
+          "source": "osm"
+        },
+        {
+          "name": "Holy Ghost School",
+          "kind": "complement",
+          "lat": 29.7042788,
+          "lon": -95.4769802,
+          "distanceMi": 0.626,
+          "rating": null,
+          "reviewCount": null,
+          "isNew": false,
+          "attractiveness": 3.045,
+          "source": "osm"
+        },
+        {
+          "name": "Energized for Excellence Academy",
+          "kind": "complement",
+          "lat": 29.6959117,
+          "lon": -95.4900686,
+          "distanceMi": 0.646,
+          "rating": null,
+          "reviewCount": null,
+          "isNew": false,
+          "attractiveness": 3.045,
+          "source": "osm"
+        },
+        {
+          "name": "Braeburn Elementary School",
+          "kind": "complement",
+          "lat": 29.6955635,
+          "lon": -95.4878159,
+          "distanceMi": 0.65,
+          "rating": null,
+          "reviewCount": null,
+          "isNew": false,
+          "attractiveness": 3.045,
+          "source": "osm"
+        },
+        {
+          "name": "YES Prep Gulfton Secondary",
+          "kind": "complement",
+          "lat": 29.7067506,
+          "lon": -95.4981754,
+          "distanceMi": 0.66,
+          "rating": null,
+          "reviewCount": null,
+          "isNew": false,
+          "attractiveness": 3.045,
+          "source": "osm"
+        },
+        {
+          "name": "Long Academy",
+          "kind": "complement",
+          "lat": 29.7041944,
+          "lon": -95.4991881,
+          "distanceMi": 0.711,
+          "rating": null,
+          "reviewCount": null,
+          "isNew": false,
+          "attractiveness": 3.045,
+          "source": "osm"
+        },
+        {
+          "name": "\u00c9toile Academy Charter School",
+          "kind": "complement",
+          "lat": 29.7095361,
+          "lon": -95.4997349,
+          "distanceMi": 0.806,
+          "rating": null,
+          "reviewCount": null,
+          "isNew": false,
+          "attractiveness": 3.045,
+          "source": "osm"
+        },
+        {
+          "name": "Veritas Christian Academy of Houston",
+          "kind": "complement",
+          "lat": 29.7028279,
+          "lon": -95.4733332,
+          "distanceMi": 0.855,
+          "rating": null,
+          "reviewCount": null,
+          "isNew": false,
+          "attractiveness": 3.045,
+          "source": "osm"
+        },
+        {
+          "name": "The Enrichery",
+          "kind": "complement",
+          "lat": 29.7067372,
+          "lon": -95.4728126,
+          "distanceMi": 0.882,
+          "rating": null,
+          "reviewCount": null,
+          "isNew": false,
+          "attractiveness": 3.045,
+          "source": "osm"
+        },
+        {
+          "name": "KIPP",
+          "kind": "complement",
+          "lat": 29.7063104,
+          "lon": -95.5020507,
+          "distanceMi": 0.886,
+          "rating": null,
+          "reviewCount": null,
+          "isNew": false,
+          "attractiveness": 3.045,
+          "source": "osm"
+        },
+        {
+          "name": "Benavidez Elementary School",
+          "kind": "complement",
+          "lat": 29.7173157,
+          "lon": -95.4921621,
+          "distanceMi": 0.901,
+          "rating": null,
+          "reviewCount": null,
+          "isNew": false,
+          "attractiveness": 3.045,
+          "source": "osm"
+        },
+        {
+          "name": "Sutton Elementary School",
+          "kind": "complement",
+          "lat": 29.6974987,
+          "lon": -95.5022665,
+          "distanceMi": 1.032,
+          "rating": null,
+          "reviewCount": null,
+          "isNew": false,
+          "attractiveness": 3.045,
           "source": "osm"
         }
       ],
@@ -290,43 +417,63 @@
         },
         "seed": 42
       },
-      "gaps": []
+      "gaps": [
+        "odds are placeholder numbers (Phase 3)"
+      ]
     },
     {
-      "id": "L1002-S3",
-      "listingId": 1002,
-      "propertyId": 5002,
-      "address": "1901 N Shepherd Dr",
-      "lat": 29.803,
-      "lon": -95.41,
-      "sizeSqft": 1100,
-      "rentMonthly": 3600,
-      "rentPsfYear": 39.3,
-      "serviceType": "FullService",
+      "id": "L3940397-S12505498",
+      "listingId": 3940397,
+      "propertyId": 233953,
+      "address": "808 Travis St",
+      "lat": 29.7588018,
+      "lon": -95.3650891,
+      "sizeSqft": 1408.0,
+      "rentMonthly": 2112.0,
+      "rentPsfYear": 18.0,
+      "serviceType": "TripleNet",
       "spaceUse": "OfficeRetail",
-      "photoUrl": null,
-      "matterportModelId": null,
+      "photoUrl": "https://ahprd1cdn.csgpimgs.com/i2/sEU082NruhDEv0foml-ZaRpJ3yYYknMX4odgYWKf_4I/113/image.jpg",
+      "matterportModelId": "wovF4kpoaw4",
       "aerial": {
-        "parcelWkt": "POLYGON((-95.4104 29.8027,-95.4096 29.8027,-95.4096 29.8033,-95.4104 29.8033,-95.4104 29.8027))",
-        "visibilityScore": 3,
-        "visibilityReason": "Set back behind a strip-center sign",
-        "roadAccessScore": 3,
-        "roadAccessReason": "One driveway, left turns blocked by median",
-        "collection": "2025 Houston ortho",
-        "imageUrl": "/api/sites/L1002-S3/aerial.jpg"
+        "parcelWkt": "MULTIPOLYGON (((-95.3647971 29.7589457, -95.3652456 29.7583802, -95.365899 29.7587741, -95.3654504 29.7593397, -95.3647971 29.7589457)))",
+        "visibilityScore": null,
+        "visibilityReason": null,
+        "roadAccessScore": null,
+        "roadAccessReason": null,
+        "collection": "us-tx-houston_rf08-2023",
+        "parkingSeen": null,
+        "imageUrl": "/api/sites/L3940397-S12505498/aerial.jpg"
       },
-      "interior": null,
+      "interior": {
+        "floorAreaSqft": 7998.2,
+        "rooms": [],
+        "estSeats": 56,
+        "tourUrl": "https://my.matterport.com/show/?m=wovF4kpoaw4"
+      },
       "competitors": [
         {
-          "name": "Heights Boba",
-          "kind": "competitor",
-          "lat": 29.8001,
-          "lon": -95.4088,
-          "distanceMi": 0.21,
+          "name": "University of Houston-Downtown",
+          "kind": "complement",
+          "lat": 29.7661122,
+          "lon": -95.359629,
+          "distanceMi": 0.602,
           "rating": null,
           "reviewCount": null,
           "isNew": false,
-          "attractiveness": 3.1,
+          "attractiveness": 3.045,
+          "source": "osm"
+        },
+        {
+          "name": "Young Scholars Academy",
+          "kind": "complement",
+          "lat": 29.7520298,
+          "lon": -95.372324,
+          "distanceMi": 0.638,
+          "rating": null,
+          "reviewCount": null,
+          "isNew": false,
+          "attractiveness": 3.045,
           "source": "osm"
         }
       ],
@@ -530,60 +677,70 @@
         "seed": 42
       },
       "gaps": [
-        "no 3D scan"
+        "3D scan is of the whole building",
+        "odds are placeholder numbers (Phase 3)"
       ]
     },
     {
-      "id": "L1003-S2",
-      "listingId": 1003,
-      "propertyId": 5003,
-      "address": "5110 Kelvin Dr",
-      "lat": 29.718,
-      "lon": -95.4155,
-      "sizeSqft": 950,
-      "rentMonthly": null,
-      "rentPsfYear": null,
+      "id": "L25256146-S22287729",
+      "listingId": 25256146,
+      "propertyId": 814216,
+      "address": "15115 Westheimer Rd",
+      "lat": 29.732819,
+      "lon": -95.652734,
+      "sizeSqft": 2000.0,
+      "rentMonthly": 3333.33,
+      "rentPsfYear": 20.0,
       "serviceType": "TripleNet",
       "spaceUse": "Retail",
-      "photoUrl": null,
-      "matterportModelId": null,
-      "aerial": null,
-      "interior": null,
+      "photoUrl": "https://ahprd1cdn.csgpimgs.com/i2/HhkxuniVwbJVSJwt4q2A2uEpLrKdU1tAISkE5NlpDB4/113/image.jpg",
+      "matterportModelId": "nYvgTdxFHsT",
+      "aerial": {
+        "parcelWkt": "MULTIPOLYGON (((-95.6533246 29.7326841, -95.6526484 29.7333368, -95.6522633 29.7330337, -95.6529597 29.7323598, -95.6533223 29.7326453, -95.6533246 29.7326841)))",
+        "visibilityScore": null,
+        "visibilityReason": null,
+        "roadAccessScore": null,
+        "roadAccessReason": null,
+        "collection": "us-tx-houston-2026",
+        "parkingSeen": null,
+        "imageUrl": "/api/sites/L25256146-S22287729/aerial.jpg"
+      },
+      "interior": {
+        "floorAreaSqft": 1833.2,
+        "rooms": [
+          {
+            "label": "U",
+            "areaSqft": 15.8,
+            "widthFt": 3.4,
+            "depthFt": 3.9
+          }
+        ],
+        "estSeats": 122,
+        "tourUrl": "https://my.matterport.com/show/?m=nYvgTdxFHsT"
+      },
       "competitors": [
         {
-          "name": "Village Tea House",
-          "kind": "competitor",
-          "lat": 29.7172,
-          "lon": -95.414,
-          "distanceMi": 0.1,
+          "name": "Holmquist Elementary School",
+          "kind": "complement",
+          "lat": 29.7181752,
+          "lon": -95.6574312,
+          "distanceMi": 1.05,
           "rating": null,
           "reviewCount": null,
           "isNew": false,
-          "attractiveness": 3.1,
+          "attractiveness": 3.045,
           "source": "osm"
         },
         {
-          "name": "Boba Bar",
-          "kind": "competitor",
-          "lat": 29.7195,
-          "lon": -95.417,
-          "distanceMi": 0.13,
+          "name": "Miller Intermediate School",
+          "kind": "complement",
+          "lat": 29.7171977,
+          "lon": -95.6550048,
+          "distanceMi": 1.088,
           "rating": null,
           "reviewCount": null,
           "isNew": false,
-          "attractiveness": 3.1,
-          "source": "osm"
-        },
-        {
-          "name": "Kung Fu Tea",
-          "kind": "competitor",
-          "lat": 29.716,
-          "lon": -95.418,
-          "distanceMi": 0.2,
-          "rating": null,
-          "reviewCount": null,
-          "isNew": false,
-          "attractiveness": 3.1,
+          "attractiveness": 3.045,
           "source": "osm"
         }
       ],
@@ -787,12 +944,10 @@
         "seed": 42
       },
       "gaps": [
-        "no rent given",
-        "no aerial",
-        "no 3D scan"
+        "odds are placeholder numbers (Phase 3)"
       ]
     }
   ],
-  "report": "## Recommendation\n\n**2416 Westheimer Rd** has the best odds (68%) of being profitable by month 12.\n\n_Fixture data: not real._",
+  "report": "## Recommendation\n\n**6003 Bellaire Blvd** ranks first in this fixture.\n\n_Sites, rent, competitors, aerial and 3D data are real; odds and demographics are placeholders._",
   "createdAt": "2026-11-14T08:00:00Z"
 }

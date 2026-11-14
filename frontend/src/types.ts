@@ -16,6 +16,7 @@ export interface Aerial {
   roadAccessScore: number | null
   roadAccessReason: string | null
   collection: string | null
+  parkingSeen: number | null // from parking rows in one photo; null = count unclear; display only, not in the odds
   imageUrl: string
 }
 

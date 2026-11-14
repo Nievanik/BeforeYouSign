@@ -30,7 +30,7 @@ All keys live in `.env` (see `.env.example`). Every call goes through `backend/a
 | `POST embedding/extract` `{wkt, srid, search-text}` | Optional: find similar places by meaning |
 
 - Use `buffer-meter` ≈ 30 for retail, to show driveways and shared lots around the parcel.
-- We don't use `elements/detect` for parking: on one snapshot it found 3–11 of ~40 visible stalls.
+- `elements/detect` "parking space" (threshold 0.3, `buffer-meter: 0`) returns one **upright box per parking row**, not per stall. Upright boxes fail on diagonal lots (they swallow road and building), so `vexcel.estimate_spaces` only trusts clean, non-overlapping rows. Shown on the card + drawn on the image; not used in the odds.
 - 429 → exponential backoff (1, 2, 4, 8, 16 s).
 - `include=calculated` is slow, so avoid it.
 - Credit: "Imagery © Vexcel Imaging US, Inc."
