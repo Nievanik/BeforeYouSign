@@ -66,11 +66,11 @@ Every tool: plain function → returns `models.py` types → cached. Test each o
 ## Phase 3: Simulation (A, 4:00–6:00)
 
 - [ ] `config.py`: `BUSINESS_PROFILES` from `business-profiles.md` (5 types)
-- [ ] `sim/huff.py`: demand grid, Huff share, calibration `r` from the median competitor
-- [ ] `sim/montecarlo.py`: 1,000 × 24 P&L, `pProfitableBy12`, bands, break-even customers, payback
+- [x] `sim/huff.py`: demand grid, Huff share, calibration `r` from the median competitor
+- [x] `sim/montecarlo.py`: 1,000 × 24 P&L, `pProfitableBy12`, bands, break-even customers, payback
 - [ ] Risk factors (top 3, plain-English text with site evidence)
 - [ ] `simulate(siteId, overrides)` for agent what-ifs (`simulation.md` §7b)
-- [ ] `tests/test_sim.py`: same seed → same result · zero people → 0% · calibration ≈ typical · < 1 s
+- [x] `tests/test_sim.py`: same seed → same result · zero people → 0% · calibration ≈ typical · < 1 s
 
 **Meanwhile B:** profit fan chart + odds bar from fixture `SimResult`.
 

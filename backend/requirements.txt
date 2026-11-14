@@ -6,3 +6,4 @@ certifi
 pytest
 httpx
 shapely
+numpy
