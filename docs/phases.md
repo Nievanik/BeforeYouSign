@@ -3,7 +3,7 @@
 Tick boxes as you go (`[ ]` → `[x]`). Owners: **A** = backend/data, **B** = frontend/agent, **AB** = both together.
 Each phase ends with a **gate**: a concrete check that must pass before moving on. If a phase overruns by more than 30 min, apply the cut order at the bottom.
 
-**Status:** Phase 2 tools done (gate: `python -m scripts.phase2_gate`; demographics need a Census key) · next: Phase 3 · last updated 2026-11-14
+**Status:** Phase 2 done: gate passes with all data incl. Census (`python -m scripts.phase2_gate`); site cards show aerial, angled photos and 3D tour on the fixture · next: Phase 3 · last updated 2026-11-14
 
 | # | Phase | Time | Owner | Status |
 |---|---|---|---|---|

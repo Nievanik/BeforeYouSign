@@ -225,14 +225,14 @@
         }
       ],
       "demographics": {
-        "population": 5120,
-        "medianIncome": 78400,
-        "medianAge": 33.1,
-        "tract": "48201411400",
-        "densityPerSqMi": 9800,
-        "driveShare": 0.86,
-        "walkTransitShare": 0.09,
-        "noVehicleShare": 0.07
+        "population": 3245,
+        "medianIncome": 34648.0,
+        "medianAge": 23.7,
+        "tract": "48201421601",
+        "densityPerSqMi": 13737.0,
+        "driveShare": 0.431,
+        "walkTransitShare": 0.28,
+        "noVehicleShare": 0.272
       },
       "sim": {
         "pProfitableBy12": 0.68,
@@ -490,14 +490,14 @@
         }
       ],
       "demographics": {
-        "population": 4380,
-        "medianIncome": 91200,
-        "medianAge": 36.4,
-        "tract": "48201510500",
-        "densityPerSqMi": 6200,
-        "driveShare": 0.91,
-        "walkTransitShare": 0.04,
-        "noVehicleShare": 0.04
+        "population": 1596,
+        "medianIncome": 139038.0,
+        "medianAge": 37.7,
+        "tract": "48201980700",
+        "densityPerSqMi": 3292.0,
+        "driveShare": 0.522,
+        "walkTransitShare": 0.319,
+        "noVehicleShare": 0.08
       },
       "sim": {
         "pProfitableBy12": 0.41,
@@ -763,14 +763,14 @@
         }
       ],
       "demographics": {
-        "population": 3950,
-        "medianIncome": 104000,
-        "medianAge": 29.8,
-        "tract": "48201413300",
-        "densityPerSqMi": 11400,
-        "driveShare": 0.72,
-        "walkTransitShare": 0.18,
-        "noVehicleShare": 0.12
+        "population": 3277,
+        "medianIncome": 67071.0,
+        "medianAge": 32.2,
+        "tract": "48201454305",
+        "densityPerSqMi": 5043.0,
+        "driveShare": 0.856,
+        "walkTransitShare": 0.071,
+        "noVehicleShare": 0.007
       },
       "sim": {
         "pProfitableBy12": 0.22,
@@ -966,6 +966,6 @@
       ]
     }
   ],
-  "report": "## Recommendation\n\n**6003 Bellaire Blvd** ranks first in this fixture.\n\n_Sites, rent, competitors, aerial and 3D data are real; odds and demographics are placeholders._",
+  "report": "## Recommendation\n\n**6003 Bellaire Blvd** ranks first in this fixture.\n\n_Sites, rent, competitors, Census, aerial and 3D data are real; the odds are placeholders until Phase 3._",
   "createdAt": "2026-11-14T08:00:00Z"
 }
