@@ -43,9 +43,13 @@ One `event:` per message, `data:` is JSON.
 
 A tool failure on one site never kills the run: that site's card shows a "data missing" note.
 
+The stream replays from the first event, so a reconnect or late subscriber misses nothing. Every event has an `id`. `done` always comes last, even after a fatal `error`. An unknown `runId` gets one fatal `error` event.
+
 ## `GET /runs/{runId}`
 
-Returns `RunResult` (brief, sites with sim results, report). `404` if the id is unknown.
+Returns `RunResult` (brief, sites with sim results, report). `404` if the id is unknown, `409` while the run is still going. Runs are kept in memory, so a server restart forgets them (`golden` is always there).
+
+The first clean live run of each query is recorded to `backend/cache/runs/`. With `OFFLINE=1`, `/analyze` replays that recording (same events, pauses capped at 2 s), so the demo shows the agent's plan with Wi-Fi off. Delete the recording to re-record.
 
 ## `GET /sites/{siteId}/aerial.jpg`
 
