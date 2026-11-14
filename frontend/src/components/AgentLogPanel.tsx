@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { SparkleDoodle } from './EditorialIllustrations'
 
 export interface AgentStep {
   id: string
@@ -81,32 +82,51 @@ const DEFAULT_EXAMPLE_STEPS: AgentStep[] = [
   },
 ]
 
-const TOOL_COLORS: Record<string, { bg: string; text: string; label: string }> = {
-  plan: { bg: '#e0e7ff', text: '#3730a3', label: 'PLAN' },
-  costar: { bg: '#dbeafe', text: '#1e40af', label: 'COSTAR' },
-  census: { bg: '#fef3c7', text: '#92400e', label: 'CENSUS' },
-  osm: { bg: '#fce7f3', text: '#9d174d', label: 'OSM' },
-  vexcel: { bg: '#dcfce7', text: '#166534', label: 'VEXCEL' },
-  matterport: { bg: '#ede9fe', text: '#5b21b6', label: 'MATTERPORT' },
-  sim: { bg: '#ffedd5', text: '#9a3412', label: 'SIMULATION' },
-  report: { bg: '#f3f4f6', text: '#1f2937', label: 'REPORT' },
+const TOOL_CONFIG: Record<string, { label: string; icon: string }> = {
+  plan: { label: 'Scout Plan', icon: '🎯' },
+  costar: { label: 'Lease Listings', icon: '🏬' },
+  census: { label: 'Demographics', icon: '👥' },
+  osm: { label: 'Competitors', icon: '☕' },
+  vexcel: { label: 'Aerial & Parking', icon: '🛰️' },
+  matterport: { label: '3D Walkthrough', icon: '📐' },
+  sim: { label: 'Cash Flow Sim', icon: '🎲' },
+  report: { label: 'Decision Brief', icon: '📑' },
 }
 
 export default function AgentLogPanel({ steps = DEFAULT_EXAMPLE_STEPS }: { steps?: AgentStep[] }) {
   const [collapsed, setCollapsed] = useState(false)
+  const isAnyRunning = steps.some((s) => s.status === 'running')
 
   return (
-    <div className={`agent-log-panel ${collapsed ? 'collapsed' : ''}`}>
-      <div className="agent-log-header" onClick={() => setCollapsed(!collapsed)}>
+    <aside
+      className={`agent-log-panel editorial-card ${collapsed ? 'collapsed' : ''}`}
+      aria-label="Behind the Location Investigation"
+    >
+      <div
+        className="agent-log-header"
+        onClick={() => setCollapsed(!collapsed)}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            setCollapsed(!collapsed)
+          }
+        }}
+      >
         <div className="agent-header-title">
-          <span className="live-indicator" />
-          <strong>Agent Investigation Log</strong>
-          <span className="step-count">({steps.length} steps)</span>
+          <span className={`live-pulse-dot ${isAnyRunning ? 'is-running' : 'is-ready'}`} />
+          <div className="agent-title-text">
+            <span className="agent-log-kicker">BEHIND THE LOCATION</span>
+            <strong className="agent-log-headline">Let's investigate this spot</strong>
+          </div>
+          <span className="step-count-pill">{steps.length} checks</span>
         </div>
+
         <button
           type="button"
-          className="collapse-toggle"
-          aria-label={collapsed ? 'Expand agent log' : 'Collapse agent log'}
+          className="collapse-toggle-btn"
+          aria-label={collapsed ? 'Expand investigation log' : 'Minimize investigation log'}
         >
           {collapsed ? '▲ Expand' : '▼ Minimize'}
         </button>
@@ -114,35 +134,42 @@ export default function AgentLogPanel({ steps = DEFAULT_EXAMPLE_STEPS }: { steps
 
       {!collapsed && (
         <div className="agent-log-body">
-          {steps.map((s) => {
-            const badge = TOOL_COLORS[s.tool] || { bg: '#f3f4f6', text: '#333', label: s.tool.toUpperCase() }
-            return (
-              <div key={s.id} className={`log-entry status-${s.status}`}>
-                <div className="log-badge-col">
-                  <span
-                    className="tool-tag"
-                    style={{ backgroundColor: badge.bg, color: badge.text }}
-                  >
-                    {badge.label}
-                  </span>
+          <div className="investigation-intro">
+            <SparkleDoodle size={14} color="#DA4324" />
+            <span>Autonomous agent pipeline verifying leases, foot traffic, and cash flows:</span>
+          </div>
+
+          <div className="steps-scroll-container">
+            {steps.map((s) => {
+              const cfg = TOOL_CONFIG[s.tool] || { label: s.tool.toUpperCase(), icon: '🔍' }
+              return (
+                <div key={s.id} className={`log-entry status-${s.status}`}>
+                  <div className="step-icon-col">
+                    <span className="step-type-icon" title={cfg.label}>{cfg.icon}</span>
+                  </div>
+
+                  <div className="log-text-col">
+                    <div className="step-tool-row">
+                      <span className="tool-tag">{cfg.label}</span>
+                      {s.siteAddress && <span className="site-tag">{s.siteAddress}</span>}
+                    </div>
+                    <span className="log-msg">{s.message}</span>
+                  </div>
+
+                  <div className="step-meta-col">
+                    {s.durationMs && <span className="duration-tag">{s.durationMs}ms</span>}
+                    <span className={`status-pill status-${s.status}`}>
+                      {s.status === 'done' && '✓ Verified'}
+                      {s.status === 'running' && '● Auditing'}
+                      {s.status === 'error' && '✕ Alert'}
+                    </span>
+                  </div>
                 </div>
-                <div className="log-text-col">
-                  <span className="log-msg">{s.message}</span>
-                  {s.siteAddress && <span className="site-tag">{s.siteAddress}</span>}
-                </div>
-                {s.durationMs && (
-                  <span className="duration-tag">{s.durationMs}ms</span>
-                )}
-                <span className="status-icon">
-                  {s.status === 'done' && '✓'}
-                  {s.status === 'running' && '⏳'}
-                  {s.status === 'error' && '✕'}
-                </span>
-              </div>
-            )
-          })}
+              )
+            })}
+          </div>
         </div>
       )}
-    </div>
+    </aside>
   )
 }

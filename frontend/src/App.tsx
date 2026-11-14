@@ -5,6 +5,7 @@ import QueryBox from './components/QueryBox'
 import Report from './components/Report'
 import SiteCard from './components/SiteCard'
 import SiteMap from './components/SiteMap'
+import { SparkleDoodle } from './components/EditorialIllustrations'
 import type { BusinessBrief, RunResult, Site } from './types'
 
 const TOP = 3 // matches backend agent/run.py TOP
@@ -16,6 +17,8 @@ export default function App() {
   const [loading, setLoading] = useState(false)
   const [steps, setSteps] = useState<AgentStep[]>([])
   const [showReport, setShowReport] = useState(false)
+  const [showLeftPanel, setShowLeftPanel] = useState(true)
+  const [activeNav, setActiveNav] = useState<'explore' | 'simulations'>('explore')
   const [picks, setPicks] = useState<string[]>([]) // the agent's top picks, sent before their simulations
 
   // Load initial golden fixture on start
@@ -168,44 +171,158 @@ export default function App() {
 
   return (
     <div className="app-layout">
-      {/* Top bar: brand and decision report */}
-      <header className="app-topbar no-print">
-        <div className="topbar-brand">
-          <span className="brand-logo">📍 BeforeYouSign</span>
-        </div>
-        {run && (
-          <div className="topbar-actions">
-            <button
-              type="button"
-              className="decision-report-btn"
-              onClick={() => setShowReport(true)}
-              disabled={loading}
-              title="Open one-page executive report ready to print or export as PDF"
-            >
-              📄 Decision Report (PDF)
-            </button>
+      {/* Editorial Custom Navigation Bar */}
+      <header className="editorial-navbar no-print">
+        <div className="nav-brand-section">
+          <div className="brand-badge-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+              <polyline points="9 22 9 12 15 12 15 22" />
+            </svg>
           </div>
-        )}
+          <div className="brand-text-block">
+            <span className="brand-title">BeforeYouSign</span>
+            <span className="brand-sub">LOCATION INTELLIGENCE</span>
+          </div>
+        </div>
+
+        <nav className="nav-menu">
+          <button
+            type="button"
+            className={`nav-menu-btn ${activeNav === 'explore' ? 'is-active' : ''}`}
+            onClick={() => {
+              setActiveNav('explore')
+              setShowLeftPanel(true)
+            }}
+          >
+            Explore Locations
+          </button>
+          <button
+            type="button"
+            className={`nav-menu-btn ${activeNav === 'simulations' ? 'is-active' : ''}`}
+            onClick={() => {
+              setActiveNav('simulations')
+              setShowLeftPanel(true)
+              const card = document.querySelector('.card')
+              if (card) card.scrollIntoView({ behavior: 'smooth' })
+            }}
+          >
+            Simulations
+          </button>
+          <button
+            type="button"
+            className="nav-menu-btn"
+            onClick={() => setShowReport(true)}
+            disabled={!run}
+            title="Open printable executive decision brief"
+          >
+            Executive Brief
+          </button>
+        </nav>
+
+        <div className="nav-action-section">
+          <button
+            type="button"
+            className="primary-action-pill"
+            onClick={() => {
+              setShowLeftPanel(true)
+              const input = document.querySelector<HTMLInputElement>('.search-input')
+              if (input) {
+                input.focus()
+                input.select()
+              }
+            }}
+          >
+            <SparkleDoodle size={14} color="#FAF3E9" />
+            <span>Analyze a Location</span>
+          </button>
+        </div>
       </header>
 
-      {/* Map, ranked site cards (fill in live as sites finish), agent log */}
+      {/* Main Map + Sidebar Workspace */}
       <main className="main-content">
-        <SiteMap sites={shownSites} selectedSiteId={selectedSiteId} onSelectSite={setSelectedSiteId} />
-        {/* one left column, so the site list always starts below the query box, whatever its height */}
-        <div className="left-panel no-print">
-          <QueryBox brief={run?.brief} onSearch={handleSearch} loading={loading} />
+        <SiteMap
+          sites={shownSites}
+          selectedSiteId={selectedSiteId}
+          onSelectSite={setSelectedSiteId}
+        />
+
+        {/* Floating Decision Report circular button at bottom left */}
+        {run && (
+          <button
+            type="button"
+            className="bottom-left-report-btn no-print"
+            onClick={() => setShowReport(true)}
+            disabled={loading}
+            title="Download Decision Report (PDF)"
+            aria-label="Download Decision Report (PDF)"
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+              <line x1="12" y1="18" x2="12" y2="12" />
+              <polyline points="9 15 12 18 15 15" />
+            </svg>
+            <span className="report-tooltip">Download Decision Report (PDF)</span>
+          </button>
+        )}
+
+        {/* Floating Hamburger / Reopen button when left panel is collapsed */}
+        {!showLeftPanel && (
+          <button
+            type="button"
+            className="floating-panel-toggle-btn no-print"
+            onClick={() => setShowLeftPanel(true)}
+            title="Show Search and Candidate Locations"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="3" y1="12" x2="21" y2="12" />
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <line x1="3" y1="18" x2="21" y2="18" />
+            </svg>
+            <span className="toggle-btn-label">
+              Explore Locations {run?.sites && run.sites.length > 0 ? `(${run.sites.length})` : ''}
+            </span>
+          </button>
+        )}
+
+        {/* Left Column: Editorial Search & Candidate Properties Sidebar */}
+        <div className={`left-panel no-print ${!showLeftPanel ? 'is-collapsed' : ''}`}>
+          <QueryBox
+            brief={run?.brief}
+            onSearch={handleSearch}
+            loading={loading}
+            onTogglePanel={() => setShowLeftPanel(false)}
+          />
+
           {run && (
             <aside className="sites">
-              <div className="sites-header">
-                {loading && !picked.length ? `Finding locations (${run.sites.length})` : `Top ${shownSites.length} Picks`}
-                {loading && <span className="streaming-dot">● streaming…</span>}
+              <div className="sites-header editorial-card">
+                <div className="sites-header-left">
+                  <span className="sites-header-spark">✦</span>
+                  <span className="sites-header-title">
+                    {loading && !picked.length ? 'Finding locations' : 'Top Picks'}
+                  </span>
+                  <span className="sites-count-pill">{loading && !picked.length ? run.sites.length : shownSites.length}</span>
+                </div>
+
+                <div className="sites-header-right">
+                  {loading && <span className="streaming-badge">● streaming…</span>}
+                </div>
               </div>
-                {run.report && !loading && (
-                <details className="agent-report-card" open>
-                  <summary>Agent's recommendation</summary>
-                  <AgentReport markdown={run.report} />
+
+              {run.report && !loading && (
+                <details className="agent-report-card editorial-card" open>
+                  <summary className="agent-report-summary">
+                    <span className="summary-icon">✦</span>
+                    <span>AI Location Recommendation</span>
+                  </summary>
+                  <div className="agent-report-content">
+                    <AgentReport markdown={run.report} />
+                  </div>
                 </details>
               )}
+
               {shownSites.map((s, i) => (
                 <SiteCard
                   key={s.id}
@@ -238,16 +355,21 @@ export default function App() {
             </aside>
           )}
         </div>
+
+        {/* Autonomous AI Investigation Panel ("Behind the Location") on bottom right */}
         <div className="no-print">
           <AgentLogPanel steps={steps.length > 0 ? steps : undefined} />
         </div>
       </main>
 
+      {/* Decision Report Modal */}
       {showReport && run && <Report run={run} onClose={() => setShowReport(false)} />}
 
+      {/* Error Banner */}
       {error && (
         <div role="alert" className="error-alert no-print">
-          {error}
+          <span className="error-icon">✕</span>
+          <span>{error}</span>
         </div>
       )}
     </div>

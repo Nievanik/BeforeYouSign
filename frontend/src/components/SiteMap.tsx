@@ -43,6 +43,7 @@ export default function SiteMap({ sites, selectedSiteId, onSelectSite }: SiteMap
       pitch: 45,
     })
     m.addControl(new maplibregl.NavigationControl({ showCompass: true }), 'top-right')
+    m.addControl(new maplibregl.FullscreenControl(), 'top-right')
     m.on('error', (e) => console.error('map error', e.error))
     map.current = m
     return () => m.remove()
@@ -62,7 +63,7 @@ export default function SiteMap({ sites, selectedSiteId, onSelectSite }: SiteMap
       const markerEl = document.createElement('div')
       markerEl.className = `site-pin rank-${i + 1} ${selectedRef.current === s.id ? 'is-selected' : ''}`
       sitePins.current.set(s.id, markerEl)
-      markerEl.innerHTML = `<span>#${i + 1}</span>`
+      markerEl.innerHTML = `<span class="pin-number">#${i + 1}</span>`
       markerEl.title = `${s.address}`
 
       if (onSelectSite) {
@@ -73,20 +74,29 @@ export default function SiteMap({ sites, selectedSiteId, onSelectSite }: SiteMap
       }
 
       const odds = s.sim
-        ? `${Math.round(s.sim.pProfitableBy12 * 100)}% odds of profit by month 12`
-        : 'Not simulated'
+        ? `${Math.round(s.sim.pProfitableBy12 * 100)}% profit odds by Month 12`
+        : 'Simulation pending'
       const rent = s.rentMonthly ? `$${Math.round(s.rentMonthly).toLocaleString()}/mo` : 'Rent unlisted'
 
       const popupHtml = `
         <div class="map-popup site-popup">
-          <div class="popup-rank">Candidate Site #${i + 1}</div>
-          <strong>${esc(s.address)}</strong>
-          <div class="popup-rent">${rent} · ${s.sizeSqft.toLocaleString()} sq ft</div>
-          <div class="popup-odds">${odds}</div>
+          <div class="popup-top-badge">
+            <span class="badge-dot">●</span> Candidate #${i + 1}
+          </div>
+          <h4 class="popup-address">${esc(s.address)}</h4>
+          <div class="popup-specs">
+            <span class="spec-rent">${rent}</span>
+            <span class="spec-sep">·</span>
+            <span class="spec-size">${s.sizeSqft.toLocaleString()} sq ft</span>
+          </div>
+          <div class="popup-odds-box">
+            <span class="odds-spark">✦</span>
+            <span>${odds}</span>
+          </div>
         </div>
       `
 
-      const popup = new maplibregl.Popup({ offset: 20, closeButton: false }).setHTML(popupHtml)
+      const popup = new maplibregl.Popup({ offset: 24, closeButton: false }).setHTML(popupHtml)
       const marker = new maplibregl.Marker({ element: markerEl })
         .setLngLat([s.lon, s.lat])
         .setPopup(popup)
@@ -129,19 +139,19 @@ export default function SiteMap({ sites, selectedSiteId, onSelectSite }: SiteMap
         ? `★ ${comp.rating.toFixed(1)}${comp.reviewCount ? ` (${comp.reviewCount} reviews)` : ''}`
         : 'Rating unlisted'
 
-      const kindLabel = isComp ? 'Competitor' : 'Complement (Traffic Draw)'
+      const kindLabel = isComp ? 'Direct Competitor' : 'Complementary Magnet'
 
       const popupHtml = `
-        <div class="map-popup comp-popup">
+        <div class="map-popup comp-popup ${isComp ? 'is-competitor' : 'is-complement'}">
           <span class="popup-tag ${isComp ? 'tag-comp' : 'tag-compl'}">${kindLabel}</span>
-          <strong>${esc(comp.name)}</strong>
+          <h5 class="popup-comp-name">${esc(comp.name)}</h5>
           <div class="popup-meta">${comp.address ? esc(comp.address) : `${comp.lat.toFixed(5)}, ${comp.lon.toFixed(5)}`}</div>
           <div class="popup-meta">${ratingText}</div>
           <div class="popup-sub">${near.d.toFixed(2)} mi from #${near.i + 1} ${esc(near.s.address)}</div>
         </div>
       `
 
-      const popup = new maplibregl.Popup({ offset: 12, closeButton: false }).setHTML(popupHtml)
+      const popup = new maplibregl.Popup({ offset: 14, closeButton: false }).setHTML(popupHtml)
       const marker = new maplibregl.Marker({ element: markerEl })
         .setLngLat([comp.lon, comp.lat])
         .setPopup(popup)
@@ -180,12 +190,14 @@ export default function SiteMap({ sites, selectedSiteId, onSelectSite }: SiteMap
       <div ref={el} style={{ width: '100%', height: '100%' }} />
 
       {/* Map Legend and Filter Controls */}
-      <div className="map-legend-card">
-        <div className="legend-title">Map Layers</div>
+      <div className="map-legend-card editorial-card">
+        <div className="legend-title">
+          <span className="legend-spark">✦</span> Map Layers
+        </div>
         <div className="legend-items">
           <div className="legend-item">
             <span className="legend-icon site-icon">#1</span>
-            <span>Candidate Sites ({sites.length})</span>
+            <span className="legend-label">Candidate Sites ({sites.length})</span>
           </div>
           <label className="legend-item checkbox-label">
             <input
@@ -194,7 +206,7 @@ export default function SiteMap({ sites, selectedSiteId, onSelectSite }: SiteMap
               onChange={(e) => setShowCompetitors(e.target.checked)}
             />
             <span className="legend-icon comp-icon" />
-            <span>Competitors</span>
+            <span className="legend-label">Competitors</span>
             {noCompetitorData && <span className="legend-note">(lookup failed, try again)</span>}
           </label>
           <label className="legend-item checkbox-label">
@@ -204,7 +216,7 @@ export default function SiteMap({ sites, selectedSiteId, onSelectSite }: SiteMap
               onChange={(e) => setShowComplements(e.target.checked)}
             />
             <span className="legend-icon compl-icon" />
-            <span>Complements (Schools/Transit)</span>
+            <span className="legend-label">Complements (Schools/Transit)</span>
           </label>
         </div>
       </div>
