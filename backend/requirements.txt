@@ -7,3 +7,5 @@ pytest
 httpx
 shapely
 numpy
+deepagents
+langchain-openai

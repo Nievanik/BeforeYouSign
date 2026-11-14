@@ -32,7 +32,8 @@ One `event:` per message, `data:` is JSON.
 
 | event | data | When |
 |---|---|---|
-| `brief` | `BusinessBrief` | Request parsed |
+| `brief` | `BusinessBrief` | Request parsed, and again whenever the agent relaxes a limit |
+| `plan` | `{ "todos": [{ "title": "...", "status": "pending" \| "in_progress" \| "completed" }] }` | The agent writes or updates its plan |
 | `step` | `{ "id": "s3", "tool": "vexcel", "siteId": "L123", "message": "Reading the aerial image of 9700 Tanner Rd", "status": "running" \| "done" \| "error" }` | Each tool call starts and ends |
 | `site` | `Site` | A site's evidence is complete (cards appear one by one) |
 | `sim` | `{ "siteId": "L123", "result": SimResult }` | Simulation finished for a site |

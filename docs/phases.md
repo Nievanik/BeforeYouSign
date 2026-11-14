@@ -78,11 +78,11 @@ Every tool: plain function → returns `models.py` types → cached. Test each o
 
 ## Phase 4: Agent (B, 4:00–7:30)
 
-- [ ] OpenRouter client (`ChatOpenAI` with base_url), model from `OPENROUTER_MODEL`, 429 backoff, response cache
-- [ ] Parse the request → `BusinessBrief` (structured output); unknown business type → LLM-proposed profile tagged "AI estimate"
-- [ ] deepagents agent with tools: `find_candidates`, `relax_constraint`, `people_nearby`, `competitors`, `inspect_aerial`, `inspect_interior`, `simulate`, `finish`
-- [ ] System prompt enforces the 4 behaviors in `requirements.md` F8: re-plan, triage, investigate, explain
-- [ ] Guardrails: max 25 tool calls / 120 s → switch to `pipeline.py`
+- [x] OpenRouter client (`ChatOpenAI` with base_url), model from `OPENROUTER_MODEL`, 429 backoff, response cache
+- [x] Parse the request → `BusinessBrief` (structured output); unknown business type → LLM-proposed profile tagged "AI estimate"
+- [x] deepagents agent with tools: `find_candidates`, `relax_constraint`, `people_nearby`, `competitors`, `inspect_aerial`, `inspect_interior`, `simulate`, `finish`
+- [x] System prompt enforces the 4 behaviors in `requirements.md` F8: re-plan, triage, investigate, explain
+- [x] Guardrails: max 25 tool calls / 120 s → switch to `pipeline.py`
 - [ ] `agent/pipeline.py`: the same tools in a fixed order (fallback)
 - [ ] `POST /analyze` + SSE events (`api.md`): plan, step, site, sim, report, done
 
