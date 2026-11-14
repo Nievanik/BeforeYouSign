@@ -83,8 +83,8 @@ Every tool: plain function → returns `models.py` types → cached. Test each o
 - [x] deepagents agent with tools: `find_candidates`, `relax_constraint`, `people_nearby`, `competitors`, `inspect_aerial`, `inspect_interior`, `simulate`, `finish`
 - [x] System prompt enforces the 4 behaviors in `requirements.md` F8: re-plan, triage, investigate, explain
 - [x] Guardrails: max 25 tool calls / 120 s → switch to `pipeline.py`
-- [ ] `agent/pipeline.py`: the same tools in a fixed order (fallback)
-- [ ] `POST /analyze` + SSE events (`api.md`): plan, step, site, sim, report, done
+- [x] `agent/pipeline.py`: the same tools in a fixed order (fallback)
+- [x] `POST /analyze` + SSE events (`api.md`): plan, step, site, sim, report, done
 
 **Gate:** golden query through the API streams a plan, at least one re-plan or investigation step, and a ranked result. The fallback also works with the LLM turned off.
 

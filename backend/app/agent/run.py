@@ -102,7 +102,8 @@ class Run:
                     if s.rentMonthly and s.propertyId not in props:
                         picked.append(s)
                         props.add(s.propertyId)
-                run.sites = {s.id: s for s in picked[:SHORTLIST]}
+                # a repeat search keeps already-gathered evidence (sims, aerials) for sites it finds again
+                run.sites = {s.id: run.sites.get(s.id, s) for s in picked[:SHORTLIST]}
                 lines = [f"{s.id}: {s.address}, ${s.rentMonthly:,.0f}/mo, {s.sizeSqft:,.0f} sq ft" for s in run.sites.values()]
                 return f"{len(picked)} priced sites match (showing {len(run.sites)}):\n" + "\n".join(lines)
             return run.step("costar", "Searching CoStar lease listings", None, go)
@@ -237,11 +238,7 @@ def run_agent(query: str, emit: Callable[[str, dict], None], brief: BusinessBrie
     except Exception as e:  # over budget, loops, or the model/provider failed
         emit("step", {"id": "fallback", "tool": "pipeline", "siteId": None, "status": "running",
                       "message": f"Switching to auto mode ({type(e).__name__}: {str(e)[:120]})"})
-        try:
-            from app.agent import pipeline  # Dev 2: pipeline.finish(run) completes run.sites, ranking and report
-        except ImportError:
-            emit("error", {"message": "Agent stopped and auto mode is not built yet", "fatal": True})
-            return run
+        from app.agent import pipeline
         pipeline.finish(run)
     emit("report", {"markdown": run.report or "The agent stopped before writing a report."})
     return run
