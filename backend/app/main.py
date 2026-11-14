@@ -1,16 +1,45 @@
 import json
 from pathlib import Path
 
+from typing import Any
+
 from fastapi import APIRouter, FastAPI, HTTPException, Response
+from pydantic import BaseModel
 
 from app import config
-from app.models import RunResult
+from app.models import RunResult, SimResult, Site
+from app.sim import simulate
 from app.tools import costar, matterport, vexcel
 
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures"
 
 app = FastAPI(title="BeforeYouSign")
 api = APIRouter(prefix="/api")
+
+
+def _get_profile(business_type: str) -> dict:
+    profiles = getattr(config, "BUSINESS_PROFILES", {})
+    if business_type in profiles:
+        return profiles[business_type]
+    from app.agent.brief import profile_for
+    p, _ = profile_for(business_type)
+    return p
+
+
+class SimulateRequest(BaseModel):
+    site: Site
+    businessType: str = "boba"
+    overrides: dict[str, Any] = {}
+    seed: int = 7
+
+
+@api.post("/simulate", response_model=SimResult)
+def simulate_site(req: SimulateRequest):
+    try:
+        profile = _get_profile(req.businessType)
+        return simulate(req.site, profile, req.overrides, seed=req.seed)
+    except Exception as e:
+        raise HTTPException(400, f"simulation failed: {e}")
 
 
 @api.get("/health")

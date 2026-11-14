@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import type { Site } from '../types'
+import type { SimResult, Site } from '../types'
+import AssumptionsPanel from './AssumptionsPanel'
 import ProfitFan from './ProfitFan'
 import TourEmbed from './TourEmbed'
 
@@ -33,10 +34,13 @@ export default function SiteCard({ site, rank }: { site: Site; rank: number }) {
   const a = site.aerial
   const [view, setView] = useState('above') // "above" or an oblique direction
   const [showChart, setShowChart] = useState(true)
+  const [showAssumptions, setShowAssumptions] = useState(false)
+  const [overrideSim, setOverrideSim] = useState<SimResult | null>(null)
 
-  const src = view === 'above' ? a?.imageUrl : `/api/sites/${site.id}/oblique/${view}.jpg`
-  const odds = site.sim?.pProfitableBy12 ?? 0
+  const currentSim = overrideSim ?? site.sim
+  const odds = currentSim?.pProfitableBy12 ?? 0
   const color = oddsColor(odds)
+  const src = view === 'above' ? a?.imageUrl : `/api/sites/${site.id}/oblique/${view}.jpg`
 
   return (
     <article className="card">
@@ -44,19 +48,36 @@ export default function SiteCard({ site, rank }: { site: Site; rank: number }) {
         <h2>
           #{rank} {site.address}
         </h2>
+        <button
+          type="button"
+          className={`assumptions-btn ${overrideSim ? 'has-overrides' : ''}`}
+          onClick={() => setShowAssumptions(!showAssumptions)}
+          aria-expanded={showAssumptions}
+          title="Tweak economic assumptions and test what-if scenarios"
+        >
+          ⚙️ {showAssumptions ? 'Close Levers' : 'What-If Levers'}
+          {overrideSim && <span className="override-indicator">Active</span>}
+        </button>
       </div>
 
       {/* Visual Odds Bar & Headline */}
-      {site.sim ? (
+      {currentSim ? (
         <div className="odds-section" style={{ backgroundColor: oddsBg(odds) }}>
           <div className="odds-header">
             <span className="odds-pct" style={{ color }}>
               {Math.round(odds * 100)}%
             </span>
             <span className="odds-label">chance of profit by month 12</span>
+            {overrideSim && <span className="custom-tag">What-If scenario</span>}
           </div>
 
-          <div className="odds-bar-track" role="progressbar" aria-valuenow={Math.round(odds * 100)} aria-valuemin={0} aria-valuemax={100}>
+          <div
+            className="odds-bar-track"
+            role="progressbar"
+            aria-valuenow={Math.round(odds * 100)}
+            aria-valuemin={0}
+            aria-valuemax={100}
+          >
             <div
               className="odds-bar-fill"
               style={{
@@ -68,13 +89,16 @@ export default function SiteCard({ site, rank }: { site: Site; rank: number }) {
 
           <div className="odds-badges">
             <span className="badge">
-              Median profit: {site.sim.medianMonthProfitable ? `Month ${site.sim.medianMonthProfitable}` : 'Not in 24 mo'}
+              Median profit:{' '}
+              {currentSim.medianMonthProfitable
+                ? `Month ${currentSim.medianMonthProfitable}`
+                : 'Not in 24 mo'}
             </span>
-            {site.sim.paybackMonths != null && (
-              <span className="badge">Payback: ~{site.sim.paybackMonths} mo</span>
+            {currentSim.paybackMonths != null && (
+              <span className="badge">Payback: ~{currentSim.paybackMonths} mo</span>
             )}
-            {site.sim.rentShare != null && (
-              <span className="badge">Rent: {Math.round(site.sim.rentShare * 100)}% of rev</span>
+            {currentSim.rentShare != null && (
+              <span className="badge">Rent: {Math.round(currentSim.rentShare * 100)}% of rev</span>
             )}
           </div>
         </div>
@@ -82,11 +106,20 @@ export default function SiteCard({ site, rank }: { site: Site; rank: number }) {
         <div className="missing-state">Simulation data pending</div>
       )}
 
+      {/* Assumptions / What-If Panel Drawer */}
+      {showAssumptions && (
+        <AssumptionsPanel
+          site={site}
+          onSimResultUpdate={setOverrideSim}
+          onClose={() => setShowAssumptions(false)}
+        />
+      )}
+
       {/* Property & Rent Specs */}
       <div className="specs-row">
         {site.rentMonthly != null ? (
           <span className="spec-item spec-rent">
-            <strong>{usd(site.rentMonthly)}</strong>/mo
+            <strong>{usd(overrideSim ? (overrideSim.assumptions.rentMonthly as number) : site.rentMonthly)}</strong>/mo
           </span>
         ) : (
           <span className="missing-pill">Rent not given</span>
@@ -102,7 +135,7 @@ export default function SiteCard({ site, rank }: { site: Site; rank: number }) {
       </div>
 
       {/* Profit Fan Chart toggle */}
-      {site.sim && site.sim.monthlyBands && (
+      {currentSim && currentSim.monthlyBands && (
         <div className="fan-chart-wrapper">
           <button
             type="button"
@@ -114,22 +147,22 @@ export default function SiteCard({ site, rank }: { site: Site; rank: number }) {
           </button>
           {showChart && (
             <ProfitFan
-              monthlyBands={site.sim.monthlyBands}
-              profitM12={site.sim.profitM12}
-              paybackMonths={site.sim.paybackMonths}
-              expectedCustomers={site.sim.expectedCustomers}
-              breakEvenCustomers={site.sim.breakEvenCustomers}
+              monthlyBands={currentSim.monthlyBands}
+              profitM12={currentSim.profitM12}
+              paybackMonths={currentSim.paybackMonths}
+              expectedCustomers={currentSim.expectedCustomers}
+              breakEvenCustomers={currentSim.breakEvenCustomers}
             />
           )}
         </div>
       )}
 
       {/* Top Risk Factors */}
-      {site.sim?.riskFactors && site.sim.riskFactors.length > 0 && (
+      {currentSim?.riskFactors && currentSim.riskFactors.length > 0 && (
         <div className="risk-section">
           <h3>Top Risk Factors</h3>
           <ul className="risk-list">
-            {site.sim.riskFactors.map((r, i) => (
+            {currentSim.riskFactors.map((r, i) => (
               <li key={i} className="risk-item">
                 <span className="risk-impact" title={`Impact: ${(r.impact * 100).toFixed(0)}%`}>
                   {(r.impact * 100).toFixed(0)}%

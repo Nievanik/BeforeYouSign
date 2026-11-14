@@ -23,7 +23,10 @@ RISKS = {"customers": (-1, "fewer customers than expected"), "ticket": (-1, "low
 
 def _worker_points(lon: float):
     from app.tools.costar import _workers
-    return _workers("CA" if lon < -110 else "TX")  # the kit only covers Houston and Los Angeles
+    try:
+        return _workers("CA" if lon < -110 else "TX")  # the kit only covers Houston and Los Angeles
+    except Exception:
+        return []
 
 
 def check_overrides(overrides: dict) -> None:

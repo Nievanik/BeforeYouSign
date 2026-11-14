@@ -23,11 +23,64 @@ body { font: 14px/1.4 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", 
   border: 1px solid #f1f5f9;
 }
 
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
 .card-header h2 {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
-  margin: 0 0 8px;
+  margin: 0;
   color: #0f172a;
+  flex: 1;
+}
+
+.assumptions-btn {
+  font-size: 11px !important;
+  font-weight: 600;
+  padding: 3px 8px !important;
+  border-radius: 4px;
+  background: #f1f5f9 !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #334155 !important;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.assumptions-btn:hover {
+  background: #e2e8f0 !important;
+}
+
+.assumptions-btn.has-overrides {
+  background: #eff6ff !important;
+  border-color: #93c5fd !important;
+  color: #1d4ed8 !important;
+}
+
+.override-indicator {
+  font-size: 9px;
+  background: #2563eb;
+  color: #fff;
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-weight: bold;
+}
+
+.custom-tag {
+  font-size: 10px;
+  background: #dbeafe;
+  color: #1e40af;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-weight: 600;
+  margin-left: auto;
 }
 
 /* Odds Section & Bar */
@@ -376,6 +429,197 @@ body { font: 14px/1.4 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", 
   border-radius: 6px;
   margin-top: 8px;
   border: 1px solid #fef08a;
+}
+
+/* Assumptions Panel */
+.assumptions-panel {
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin: 10px 0;
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.assumptions-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+
+.assumptions-header .header-left h4 {
+  font-size: 13px;
+  font-weight: 700;
+  margin: 0;
+  color: #0f172a;
+}
+
+.assumptions-header .subtitle {
+  font-size: 10.5px;
+  color: #64748b;
+  display: block;
+}
+
+.close-btn {
+  background: transparent !important;
+  border: none !important;
+  font-size: 14px !important;
+  color: #64748b !important;
+  cursor: pointer;
+  padding: 0 4px !important;
+}
+
+.what-if-delta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 6px 10px;
+  margin-bottom: 10px;
+}
+
+.delta-stat {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.delta-label {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #475569;
+}
+
+.delta-value {
+  font-size: 14px;
+  font-weight: 800;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.diff-pill {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+
+.diff-pill.pos {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.diff-pill.neg {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.sim-spinner {
+  font-size: 10.5px;
+  color: #2563eb;
+  font-style: italic;
+}
+
+.sim-error {
+  background: #fee2e2;
+  color: #b91c1c;
+  font-size: 11px;
+  padding: 6px 8px;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+.levers-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.lever-control {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.lever-label-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #334155;
+  font-weight: 500;
+}
+
+.lever-val {
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.lever-control input[type="range"] {
+  width: 100%;
+  height: 4px;
+  background: #e2e8f0;
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+  margin: 4px 0;
+}
+
+.switches-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 10px 0 8px;
+  padding-top: 8px;
+  border-top: 1px dashed #cbd5e1;
+}
+
+.switch-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: #334155;
+  cursor: pointer;
+}
+
+.switch-item input[type="checkbox"] {
+  cursor: pointer;
+}
+
+.panel-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.reset-btn {
+  font-size: 11px !important;
+  font-weight: 600;
+  padding: 3px 8px !important;
+  background: #f1f5f9 !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #475569 !important;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.reset-btn:hover:not(:disabled) {
+  background: #e2e8f0 !important;
+}
+
+.reset-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 @media (max-width: 600px) {
