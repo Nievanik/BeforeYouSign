@@ -27,8 +27,6 @@
       "matterportModelId": "SxQL3iGyoDo",
       "aerial": {
         "parcelWkt": "POLYGON((-95.4109 29.7422,-95.4101 29.7422,-95.4101 29.7428,-95.4109 29.7428,-95.4109 29.7422))",
-        "parkingSpaces": 24,
-        "carsSeen": 17,
         "visibilityScore": 4,
         "visibilityReason": "Corner lot facing Westheimer, storefront visible from both directions",
         "roadAccessScore": 4,
@@ -97,7 +95,11 @@
         "population": 5120,
         "medianIncome": 78400,
         "medianAge": 33.1,
-        "tract": "48201411400"
+        "tract": "48201411400",
+        "densityPerSqMi": 9800,
+        "driveShare": 0.86,
+        "walkTransitShare": 0.09,
+        "noVehicleShare": 0.07
       },
       "sim": {
         "pProfitableBy12": 0.68,
@@ -306,8 +308,6 @@
       "matterportModelId": null,
       "aerial": {
         "parcelWkt": "POLYGON((-95.4104 29.8027,-95.4096 29.8027,-95.4096 29.8033,-95.4104 29.8033,-95.4104 29.8027))",
-        "parkingSpaces": 12,
-        "carsSeen": 6,
         "visibilityScore": 3,
         "visibilityReason": "Set back behind a strip-center sign",
         "roadAccessScore": 3,
@@ -334,7 +334,11 @@
         "population": 4380,
         "medianIncome": 91200,
         "medianAge": 36.4,
-        "tract": "48201510500"
+        "tract": "48201510500",
+        "densityPerSqMi": 6200,
+        "driveShare": 0.91,
+        "walkTransitShare": 0.04,
+        "noVehicleShare": 0.04
       },
       "sim": {
         "pProfitableBy12": 0.41,
@@ -587,7 +591,11 @@
         "population": 3950,
         "medianIncome": 104000,
         "medianAge": 29.8,
-        "tract": "48201413300"
+        "tract": "48201413300",
+        "densityPerSqMi": 11400,
+        "driveShare": 0.72,
+        "walkTransitShare": 0.18,
+        "noVehicleShare": 0.12
       },
       "sim": {
         "pProfitableBy12": 0.22,
@@ -763,9 +771,9 @@
             "text": "No rent given; assumed submarket median $45/sq ft/yr"
           },
           {
-            "factor": "parking",
+            "factor": "access",
             "impact": 0.07,
-            "text": "Street parking only (not measured)"
+            "text": "Area is car-dependent (72% drive) and the lot has street parking only"
           }
         ],
         "assumptions": {

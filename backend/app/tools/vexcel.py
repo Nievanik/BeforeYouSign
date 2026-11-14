@@ -1,4 +1,8 @@
-"""Vexcel aerial imagery: parcel, top-down image, parking and car counts."""
+"""Vexcel aerial imagery: parcel and top-down image (scored by tools/vision.py).
+
+No parking count: elements/detect missed most empty stalls in one snapshot (6003 Bellaire: ~40 visible,
+3-11 detected). Car dependence now comes from Census; site access from the vision road-access score.
+"""
 import base64
 
 from shapely.geometry import shape
@@ -11,7 +15,7 @@ from app.models import Aerial
 API = "https://api.vexcelgroup.com/v2"
 LAYERS = "urban,urban-r,wide-area,urban-g"
 NO_PARCEL_HALF_M = 40  # 80 m square when there is no parcel at the point
-BUFFER_M = 30  # retail parking is often outside the tenant's parcel
+BUFFER_M = 30  # context around the lot: driveways, shared lot, frontage
 CREDIT = "Imagery © Vexcel Imaging US, Inc."
 
 
@@ -45,33 +49,7 @@ def ortho_jpeg(wkt: str) -> bytes:
     return base64.b64decode(cached("vexcel-ortho", {"wkt": wkt}, fetch))
 
 
-# shortcut: sam3 finds cars well but misses most empty painted stalls, so parkingSpaces is a LOWER BOUND
-# (6003 Bellaire: ~40 striped stalls visible, 11 detected at 0.3, 3 at 0.5). Lot-area / 30 m2 overcounts
-# because lot boxes overlap the building. Upgrade: polygon masks minus building footprint.
-DETECTION_THRESHOLD = 0.3
-
-
-def detect_counts(wkt: str) -> dict[str, int]:
-    labels = ("parking space", "car")
-
-    def fetch():
-        r = _call("POST", "elements/detect", json={
-            "wkt": wkt, "srid": 4326, "buffer-meter": BUFFER_M,
-            "images": [{"endpoint": "ortho/extract",
-                        "request": {"layer": LAYERS, "srid": 4326, "wkt": wkt, "crop": "bounding_box"}}],
-            "model-input": {"elements": [{"label": l, "model": "sam3", "detection-threshold": DETECTION_THRESHOLD} for l in labels],
-                            "include": ["bbox", "confidence"]}})
-        r.raise_for_status()
-        feats = r.json().get("features", [])
-        return {l: sum(len(f["properties"].get("detections", [])) for f in feats if f["properties"].get("label") == l)
-                for l in labels}
-
-    return cached("vexcel-detect", {"wkt": wkt, "threshold": DETECTION_THRESHOLD}, fetch)
-
-
 def aerial(site_id: str, lat: float, lon: float) -> Aerial:
-    """Parcel + parking/car counts. Visibility and road access are filled in later by tools/vision.py."""
+    """Parcel + image URL. Visibility and road access are filled in later by tools/vision.py."""
     p = parcel(lat, lon)
-    counts = detect_counts(p["wkt"])
-    return Aerial(parcelWkt=p["wkt"], parkingSpaces=counts["parking space"], carsSeen=counts["car"],
-                  collection=p["collection"], imageUrl=f"/api/sites/{site_id}/aerial.jpg")
+    return Aerial(parcelWkt=p["wkt"], collection=p["collection"], imageUrl=f"/api/sites/{site_id}/aerial.jpg")

@@ -11,8 +11,6 @@ export interface BusinessBrief {
 
 export interface Aerial {
   parcelWkt: string
-  parkingSpaces: number
-  carsSeen: number
   visibilityScore: number | null
   visibilityReason: string | null
   roadAccessScore: number | null
@@ -53,6 +51,10 @@ export interface Demographics {
   medianIncome: number | null
   medianAge: number | null
   tract: string
+  densityPerSqMi: number | null
+  driveShare: number | null
+  walkTransitShare: number | null
+  noVehicleShare: number | null
 }
 
 export interface Band {

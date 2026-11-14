@@ -55,8 +55,6 @@ Keep `serviceType`: TripleNet rent excludes taxes, insurance and CAM, so add `co
 | Field | Type | Source |
 |---|---|---|
 | `parcelWkt` | str | `property/extract` feature geometry (or 80 m square on 404) |
-| `parkingSpaces` | int | `elements/detect` count for "parking space" |
-| `carsSeen` | int | `elements/detect` count for "car" (demand signal) |
 | `visibilityScore` | 1–5 | LLM vision on ortho + oblique, plus `visibilityReason` |
 | `roadAccessScore` | 1–5 | LLM vision, plus `roadAccessReason` |
 | `collection` | str | `metadata.collection` (capture date for credibility) |
@@ -102,6 +100,12 @@ Keep `serviceType`: TripleNet rent excludes taxes, insurance and CAM, so add `co
 | `medianIncome` | `B19013_001E` |
 | `medianAge` | `B01002_001E` |
 | `tract` | from Census geocoder on lat/lon |
+| `densityPerSqMi` | population ÷ tract `AREALAND` (geocoder) |
+| `driveShare` | `B08301_002E / B08301_001E` (commute by car) |
+| `walkTransitShare` | `(B08301_010E + B08301_019E) / B08301_001E` |
+| `noVehicleShare` | `B08201_002E / B08201_001E` (households without a car) |
+
+The commute shares describe how **residents** travel, used as a proxy for how customers arrive. They replace the aerial parking count. Census can't see a specific lot; the vision `roadAccessScore` covers that.
 
 ## SimResult
 

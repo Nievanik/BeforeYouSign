@@ -52,7 +52,7 @@ The MVP serves the primary user only.
 
 ### F5. Inspect from above (Vexcel)
 - `property/extract` at the site's lat/lon (WKT is **lon lat**, always `srid=4326`). 404 = no parcel; fall back to an 80 m square.
-- `ortho/extract` image of the parcel; `elements/detect` with labels such as `"car"` and `"parking space"` → **parking count**.
+- `ortho/extract` image of the parcel. (No parking count: `elements/detect` on one snapshot missed most empty stalls. Car dependence comes from Census commute data; site access from the vision score.)
 - Vision model (OpenRouter) reads the ortho and oblique images → storefront visibility and road access (scored from 1 to 5 with a one-line reason).
 - Retry on 429 with backoff (as in `Hackathon/API_docs/vexcel-kit/vexcel_quickstart.py`).
 
@@ -83,14 +83,14 @@ CoStar judges give 30% for "agentic depth: reasons, plans, acts; not a chat wrap
 - **Required agent behaviors** (each must show up in the step log):
   1. **Re-plan on thin results:** fewer than 5 candidates → relax one constraint (rent +15%, size range, nearby submarkets) and say which one and why.
   2. **Triage:** run cheap checks (rent, competitors, people nearby, quick simulation) on every site; run expensive checks (Vexcel detection + vision, Matterport) only on the top ~5.
-  3. **Investigate weak or surprising results:** e.g. low odds → check whether parking or competition drives it (rerun the simulation without that factor) before ranking; a missing scan or parcel → note the gap and continue.
+  3. **Investigate weak or surprising results:** e.g. low odds → check whether access or competition drives it (rerun the simulation without that factor) before ranking; a missing scan or parcel → note the gap and continue.
   4. **Explain:** final ranking with evidence links (number, image or source).
 - **Fallback:** `pipeline.py` runs the same tools in a fixed order if the model fails or loops (more than 25 tool calls or 120 s). The UI labels a fallback run "auto mode".
 - Backend streams every plan update and tool call to the UI (SSE).
 
 ### F9. Results UI
 - **Map** (MapLibre or Leaflet) with candidate sites, competitors and a demand heatmap.
-- **Site cards**, side by side, showing chance profitable by month 12, rent per month, size, parking count, seats, top risks, aerial thumbnail and a "View 3D tour" button.
+- **Site cards**, side by side, showing chance profitable by month 12, rent per month, size, how people get around (Census) + road access score, seats, top risks, aerial thumbnail and a "View 3D tour" button.
 - **Charts** (Recharts): a fan chart of monthly profit and a "profitable by month 12" bar per site.
 
 ### F10. Decision report
@@ -142,8 +142,8 @@ Known data facts:
 ## 8. Acceptance criteria (demo-ready)
 
 1. Typing the golden-path query returns 5–10 real Houston spaces within the rent limit.
-2. Every site card shows: chance profitable by month 12, P10/P50/P90, rent per month, parking count from Vexcel, and a working Matterport tour (or a clear "no scan" note).
-3. At least one card explains its lower odds in plain English that names competitors and distances, e.g. "two competitors within 0.4 mi, limited parking".
+2. Every site card shows: chance profitable by month 12, P10/P50/P90, rent per month, road access score from the Vexcel image, and a working Matterport tour (or a clear "no scan" note).
+3. At least one card explains its lower odds in plain English that names competitors and distances, e.g. "two competitors within 0.4 mi, car-dependent area with poor road access".
 4. The agent's plan and steps stream live in the UI, and the golden run shows at least one re-plan or investigation step (not just a fixed sequence).
 5. The report exports to one page.
 6. With the network off, the same query still runs from cache.

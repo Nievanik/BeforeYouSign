@@ -18,8 +18,6 @@ class BusinessBrief(BaseModel):
 
 class Aerial(BaseModel):
     parcelWkt: str
-    parkingSpaces: int
-    carsSeen: int
     visibilityScore: Optional[int] = None  # 1-5, null until vision has run
     visibilityReason: Optional[str] = None
     roadAccessScore: Optional[int] = None  # 1-5
@@ -60,6 +58,10 @@ class Demographics(BaseModel):
     medianIncome: Optional[float] = None
     medianAge: Optional[float] = None
     tract: str
+    densityPerSqMi: Optional[float] = None
+    driveShare: Optional[float] = None  # 0-1, commuters who go by car (proxy for how customers arrive)
+    walkTransitShare: Optional[float] = None  # 0-1, commuters who walk or take transit
+    noVehicleShare: Optional[float] = None  # 0-1, households without a car
 
 
 class Band(BaseModel):

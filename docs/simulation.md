@@ -37,13 +37,13 @@ P(i→j) = (A_j / d_ij^λ) / Σ_k (A_k / d_ik^λ)
 
 ```
 A_competitor = (rating / 4.0)^β × log(1 + reviewCount)        # Yelp
-A_ourSite    = median(A of competitors) × visibility × parking  # a new store starts "average"
+A_ourSite    = median(A of competitors) × visibility × access   # a new store starts "average"
 ```
 
   - `β` = 2 (a 4.5★ shop pulls ~1.27× a 4.0★ shop; a 3.0★ shop ~0.56×).
   - `log(1 + reviews)` = how established/popular it is (50 reviews ≈ 3.9, 1,000 ≈ 6.9).
   - `visibility` = 0.8–1.2 from the Vexcel vision score (1–5 → 0.8 + 0.1 × (score − 1)).
-  - `parking` = 0.85 if `parkingSpaces < profile.minParking` and the brief needs parking, else 1.0.
+  - `access` = 0.85 if the area is car-dependent (Census `driveShare` ≥ 0.85) **and** the vision `roadAccessScore` ≤ 2, else 1.0. (Replaces the aerial parking count: one snapshot that missed most empty stalls.)
 - Competitors with no Yelp match: rating 4.0, reviewCount 20 (labeled "estimated").
 
 ## 3. Calibration: people → customers per day
@@ -106,7 +106,7 @@ For each random input, compare its average in **losing runs** (month-12 profit <
 
 ## 7b. What-if runs (for the agent)
 
-The agent calls `simulate(siteId, overrides)` as a tool. `overrides` can change any profile field or switch a factor off (`{"parkingPenalty": false}`, `{"newCompetitors": false}`, `{"rentMonthly": 5200}`). This lets the agent test *why* a site scores low ("without the parking penalty: 58% → 71%, so parking is the main problem") and show it in the step log. Same seed, so the difference comes only from the change.
+The agent calls `simulate(siteId, overrides)` as a tool. `overrides` can change any profile field or switch a factor off (`{"accessPenalty": false}`, `{"newCompetitors": false}`, `{"rentMonthly": 5200}`). This lets the agent test *why* a site scores low ("without the parking penalty: 58% → 71%, so parking is the main problem") and show it in the step log. Same seed, so the difference comes only from the change.
 
 ## 8. Tests (`tests/test_sim.py`)
 

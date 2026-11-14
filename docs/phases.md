@@ -55,13 +55,13 @@ Every tool: plain function → returns `models.py` types → cached. Test each o
   - [x] `tests/test_tools.py`: rent normalization (monthly/yearly, rate 0 → null)
 - [x] **Census** (needs free `CENSUS_API_KEY`: the ACS API now requires one) (`tools/census.py`): geocoder → tract, population, land area, income
 - [x] **OSM** (`tools/osm.py`): competitors by business type within radius (default attractiveness)
-- [x] **Vexcel** (parking count is a lower bound, see `vexcel.py`) (`tools/vexcel.py`): parcel (404 → square), ortho JPEG, `elements/detect` parking count, `/api/sites/{id}/aerial.jpg`
+- [x] **Vexcel** (`tools/vexcel.py`): parcel (404 → square), ortho JPEG, `/api/sites/{id}/aerial.jpg`. Parking count dropped (unreliable); Census commute data + vision road access replace it
 - [x] **Matterport** (`tools/matterport.py`): floor area, rooms, seat estimate, tour URL
 - [x] **Vision** (`tools/vision.py`): OpenRouter model scores visibility + road access from the ortho (JSON)
 
 **Meanwhile B:** query box, site cards, map markers, agent log panel, all from the fixture.
 
-**Gate:** a script prints, for the golden query, ≥5 real Houston sites each with rent, people nearby, competitors, parking and floor area (or a named gap).
+**Gate:** a script prints, for the golden query, ≥5 real Houston sites each with rent, people nearby, competitors, Census travel data and floor area (or a named gap).
 
 ## Phase 3: Simulation (A, 4:00–6:00)
 
@@ -131,7 +131,7 @@ Cut from the top first:
 6. deepagents → custom loop (LLM picks the next tool, plain while loop). Keep the visible plan and re-plan, because agentic depth is 30% of the CoStar score.
 7. `pipeline.py` only (last resort)
 
-**Never cut:** real CoStar sites, profit odds, Vexcel parking/aerial, Matterport tour, live step log, offline cache.
+**Never cut:** real CoStar sites, profit odds, Vexcel aerial + vision, Matterport tour, live step log, offline cache.
 
 ## Later (post-hackathon or if time is left)
 

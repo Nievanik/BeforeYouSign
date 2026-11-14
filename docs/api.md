@@ -33,7 +33,7 @@ One `event:` per message, `data:` is JSON.
 | event | data | When |
 |---|---|---|
 | `brief` | `BusinessBrief` | Request parsed |
-| `step` | `{ "id": "s3", "tool": "vexcel", "siteId": "L123", "message": "Counting parking at 9700 Tanner Rd", "status": "running" \| "done" \| "error" }` | Each tool call starts and ends |
+| `step` | `{ "id": "s3", "tool": "vexcel", "siteId": "L123", "message": "Reading the aerial image of 9700 Tanner Rd", "status": "running" \| "done" \| "error" }` | Each tool call starts and ends |
 | `site` | `Site` | A site's evidence is complete (cards appear one by one) |
 | `sim` | `{ "siteId": "L123", "result": SimResult }` | Simulation finished for a site |
 | `report` | `{ "markdown": "..." }` | Final recommendation written |
@@ -48,7 +48,7 @@ Returns `RunResult` (brief, sites with sim results, report). `404` if the id is 
 
 ## `GET /sites/{siteId}/aerial.jpg`
 
-Cached Vexcel ortho image with the parcel outline and parking detections drawn on it. The key stays server-side; the browser only sees this proxy.
+Cached Vexcel ortho image with the parcel outline drawn on it. The key stays server-side; the browser only sees this proxy.
 
 ## `GET /health`
 

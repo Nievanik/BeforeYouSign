@@ -27,10 +27,10 @@ All keys live in `.env` (see `.env.example`). Every call goes through `backend/a
 | `POST ortho/extract` `{wkt, srid, layer, buffer-meter: 30, crop: "bounding_box", image-format: "jpeg"}` | Top-down image (returns bytes) |
 | `GET oriented/collections?…&layer=urban&product-type=oblique` | Which oblique directions exist (404 = none) |
 | `POST oriented/extract` `{…, product-type: "oblique-north", rotation: "natural"}` | Angled view for storefront visibility |
-| `POST elements/detect` `{wkt, srid, buffer-meter: 30, images:[…], model-input:{elements:[{label:"parking space", model:"sam3", detection-threshold:0.5}], include:["bbox","confidence"]}}` | Count parking spaces / cars |
 | `POST embedding/extract` `{wkt, srid, search-text}` | Optional: find similar places by meaning |
 
-- Use `buffer-meter` ≈ 30 for retail: parking lots are often outside the tenant's parcel.
+- Use `buffer-meter` ≈ 30 for retail, to show driveways and shared lots around the parcel.
+- We don't use `elements/detect` for parking: on one snapshot it found 3–11 of ~40 visible stalls.
 - 429 → exponential backoff (1, 2, 4, 8, 16 s).
 - `include=calculated` is slow, so avoid it.
 - Credit: "Imagery © Vexcel Imaging US, Inc."
@@ -82,7 +82,7 @@ Be polite: one query per site, cached, with a descriptive generic User-Agent.
 ## US Census
 
 - Tract from lat/lon: `https://geocoding.geo.census.gov/geocoder/geographies/coordinates?x={lon}&y={lat}&benchmark=Public_AR_Current&vintage=Current_Current&format=json`
-- ACS: `https://api.census.gov/data/2023/acs/acs5?get=B01003_001E,B19013_001E,B01002_001E&for=tract:{tract}&in=state:{st}+county:{co}`
+- ACS: `https://api.census.gov/data/2023/acs/acs5?get=B01003_001E,B19013_001E,B01002_001E,B08301_001E,B08301_002E,B08301_010E,B08301_019E,B08201_001E,B08201_002E&for=tract:{tract}&in=state:{st}+county:{co}`
 - The ACS API **now requires a key** (it redirects to `missing_key.html` without one). Free and instant: api.census.gov/data/key_signup.html → `CENSUS_API_KEY`. The geocoder still needs no key.
 
 ## LLM via OpenRouter (agent, vision, report)

@@ -13,11 +13,11 @@ Opening a small business usually means signing a multi-year lease, often a perso
 1. finds available spaces that fit,
 2. examines each site from **three angles**:
    - **market data:** rent, size and nearby competitors from CoStar,
-   - **from above:** parking and visibility from Vexcel aerial imagery,
+   - **from above:** visibility and road access from Vexcel aerial imagery,
    - **from inside:** layout and seating from Matterport 3D scans,
 3. **simulates the business 1,000 times** for each site.
 
-The answer isn't a vague score. It's a probability: **"Site A: 81% chance of breaking even within 18 months. Site B: 47%, mainly because two competitors are within 0.4 miles and parking is limited."**
+The answer isn't a vague score. It's a probability: **"Site A: 81% chance of breaking even within 18 months. Site B: 47%, mainly because two competitors are within 0.4 miles and the lot is hard to drive into in a car-dependent area."**
 
 > Most small businesses sign a lease on gut feeling. This one simulates it first.
 
@@ -42,7 +42,7 @@ Input: business type, budget and target area, in plain English. The agent plans 
 - searches available spaces (CoStar),
 - maps competitors and complementary businesses nearby (CoStar tenants + OpenStreetMap),
 - pulls demographics (US Census),
-- **reads the aerial image** with a vision model: counts parking spaces, judges storefront visibility and road access.
+- **reads the aerial image** with a vision model: judges storefront visibility and road access.
 
 The UI streams each step live, so the user sees _why_ the agent concludes what it does.
 
@@ -55,7 +55,7 @@ The UI streams each step live, so the user sees _why_ the agent concludes what i
 ### 3. Map comparison and decision report
 
 - An interactive map with candidate sites, competitors and a demand heatmap.
-- Side-by-side site cards with break-even odds, rent, parking and a risk summary.
+- Side-by-side site cards with break-even odds, rent, access and a risk summary.
 - A one-page, AI-written recommendation the owner can bring to their bank or landlord.
 
 ---

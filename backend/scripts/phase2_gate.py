@@ -1,7 +1,7 @@
 """Phase 2 gate: run every tool on 5 real Houston sites for the golden query.
 
 Run from backend/:  .venv/bin/python -m scripts.phase2_gate [--vision]
---vision also scores the first site's aerial image (uses 1 OpenRouter request).
+--vision also scores the first site's aerial image: visibility and road access (1 OpenRouter request).
 """
 import sys
 import time
@@ -50,12 +50,14 @@ def main():
         comp = sum(c.kind == "competitor" for c in s.competitors)
         print(f"\n{s.address}  ({s.id}, {time.time() - t:.1f}s)")
         print(f"  rent ${s.rentMonthly:,.0f}/mo ({s.serviceType}), {s.sizeSqft:,.0f} sq ft")
-        print(f"  people: {workers:,} workers within 1 mi"
-              + (f", tract pop {s.demographics.population:,}, income {s.demographics.medianIncome}" if s.demographics else ""))
+        print(f"  people: {workers:,} workers within 1 mi")
+        if d := s.demographics:
+            print(f"  census: tract pop {d.population:,}, {d.densityPerSqMi:,.0f}/sq mi, income ${d.medianIncome or 0:,.0f}; "
+                  f"{d.driveShare:.0%} drive to work, {d.walkTransitShare:.0%} walk/transit, {d.noVehicleShare:.0%} no car")
         print(f"  competitors: {comp} within 1 mi ({len(s.competitors)} places incl. complements)"
               + (f", nearest {s.competitors[0].name} {s.competitors[0].distanceMi} mi" if s.competitors else ""))
         if s.aerial:
-            print(f"  parking: {s.aerial.parkingSpaces} spaces, {s.aerial.carsSeen} cars seen ({s.aerial.collection})")
+            print(f"  aerial: parcel + image ({s.aerial.collection})")
             if s.aerial.visibilityScore:
                 print(f"  vision: visibility {s.aerial.visibilityScore}/5 ({s.aerial.visibilityReason}); "
                       f"access {s.aerial.roadAccessScore}/5 ({s.aerial.roadAccessReason})")

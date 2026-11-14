@@ -23,7 +23,6 @@ Default numbers for the simulation ([simulation.md](simulation.md)). They live i
 | `lambda` (distance decay) | 2 | 2 | 2 | 1.5 | 1.5 [15] |
 | `workerWeight` | 0.5 | 0.6 | 0.8 | 0.1 | 0.2 |
 | `newCompetitorRatePerYear` (fallback) | 0.3 **E** | 0.3 **E** | 0.4 **E** | 0.3 **E** | 0.2 **E** |
-| `minParking` (spaces) | 5 | 5 | 10 | 6 | 5 |
 | `rentShareMax` (rent ÷ revenue) | 15% | 15% | 10% | 15% [8] | 15% |
 | Yelp categories | `bubbletea` | `coffee` | `hotdogs,sandwiches,burgers…` (by brief) | `hair` | by brief |
 

@@ -29,7 +29,7 @@ folder/
 │   │   │   └── report.py     # final one-page recommendation
 │   │   ├── tools/            # one file per data source; each returns models.py types
 │   │   │   ├── costar.py     # load JSONL once, find candidates, tenants nearby
-│   │   │   ├── vexcel.py     # parcel, ortho image, parking detection
+│   │   │   ├── vexcel.py     # parcel, ortho image
 │   │   │   ├── matterport.py # floor area, rooms, seat estimate
 │   │   │   ├── yelp.py       # competitors, rating, review count, hot & new
 │   │   │   ├── osm.py        # Overpass fallback for competitors
@@ -54,7 +54,7 @@ folder/
             ├── QueryBox.tsx
             ├── AgentLog.tsx      # streamed steps
             ├── SiteMap.tsx       # MapLibre: sites, competitors, heatmap
-            ├── SiteCard.tsx      # odds, rent, parking, seats, risks
+            ├── SiteCard.tsx      # odds, rent, access, seats, risks
             ├── ProfitFan.tsx     # Recharts P10/P50/P90 band
             ├── TourEmbed.tsx     # Matterport Showcase iframe
             └── Report.tsx        # printable one-pager
