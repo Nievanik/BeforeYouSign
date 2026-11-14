@@ -20,7 +20,8 @@ Meanings: typicalDailyCustomers (customers/day at an established shop), ticket a
 cogsMin/cogsMax and laborVariablePct and rentShareMax (fractions 0-1), laborFixedMonthly and otherFixedMonthly
 (US$/month), daysOpen (per month), rampMin/rampMax (months to reach steady sales), startupCost (US$),
 radiusMi (miles customers travel), lambda (distance decay 1.5-2.5), workerWeight (0-1, how much a nearby worker
-counts vs a resident), newCompetitorRatePerYear (new rivals opening nearby per year)."""
+counts vs a resident), newCompetitorRatePerYear (new rivals opening nearby per year).
+Put owner pay, card fees, insurance, utilities and marketing in otherFixedMonthly: a typical shop nets about 10% of revenue."""
 
 
 def parse_brief(query: str) -> BusinessBrief:

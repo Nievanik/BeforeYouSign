@@ -83,14 +83,21 @@ def test_zero_people_zero_odds():
     assert sim.simulate(site(density=0, comps=[comp(0.005, 0)]), BOBA).pProfitableBy12 == 0
 
 
-def test_free_rent_no_competitors_dense_area_near_certain():
+def test_free_rent_no_competitors_dense_area_likely():
     r = sim.simulate(site(density=20_000, rent=0), BOBA, {"newCompetitors": False})
-    assert r.pProfitableBy12 > 0.95
+    assert r.pProfitableBy12 > 0.8
 
 
-def test_site_like_median_competitor_gets_typical_customers():
+def test_newcomer_next_to_median_competitor_gets_its_discounted_share():
     s = site(comps=[comp(0, 0)])
-    assert sim.simulate(s, BOBA).expectedCustomers == pytest.approx(BOBA["typicalDailyCustomers"], rel=0.02)
+    expected = BOBA["typicalDailyCustomers"] * sim.NEW_ENTRANT
+    assert sim.simulate(s, BOBA).expectedCustomers == pytest.approx(expected, rel=0.02)
+
+
+def test_crowded_market_is_not_near_certain():
+    # 12 median-strength shops around the site: a newcomer should be far from a sure thing
+    s = site(rent=6000, comps=[comp(0.004 * (i % 4 - 1.5), 0.004 * (i // 4 - 1)) for i in range(12)])
+    assert sim.simulate(s, BOBA).pProfitableBy12 < 0.9
 
 
 def test_what_if_changes_only_the_override():

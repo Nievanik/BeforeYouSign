@@ -14,6 +14,8 @@ SWITCHES = {"newCompetitors", "accessPenalty"}  # True (default) = factor on
 OVERRIDE_KEYS = PROFILE_FIELDS | SWITCHES | {"rentMonthly"}
 SEED = 7
 DRIVE_HEAVY, POOR_ACCESS, ACCESS_PENALTY = 0.85, 2, 0.85
+NEW_ENTRANT = 0.7  # a new shop has no reviews or regulars yet: it pulls 70% of a median competitor
+GRID_PAD_MI = 1.0  # demand counted past the radius so edge competitors keep their whole catchment
 NEW_WINDOW_YEARS = 0.5  # shortcut: Yelp "hot and new" ~ last 6 months; label the rate as an estimate
 BUCKETS = 5
 # random input -> (direction that hurts, label); +1 = higher is worse
@@ -60,8 +62,10 @@ def simulate(site: Site, profile: dict, overrides: dict | None = None, seed: int
     density = (site.demographics.densityPerSqMi if site.demographics else None) or 0
     if not density:
         notes.append("no Census density: residents counted as 0")
-    x, y, people, residents, workers = huff.grid(site.lat, site.lon, p["radiusMi"], density,
-                                                 _worker_points(site.lon), p["workerWeight"])
+    worker_pts = _worker_points(site.lon)
+    x, y, people, _, _ = huff.grid(site.lat, site.lon, p["radiusMi"] + GRID_PAD_MI, density, worker_pts,
+                                   p["workerWeight"])
+    *_, residents, workers = huff.grid(site.lat, site.lon, p["radiusMi"], density, worker_pts, p["workerWeight"])
 
     comps = [c for c in site.competitors if c.kind == "competitor"]
     cx, cy = huff.store_xy(site.lat, site.lon, [(c.lat, c.lon) for c in comps])
@@ -74,7 +78,7 @@ def simulate(site: Site, profile: dict, overrides: dict | None = None, seed: int
     poor_access = bool(drive is not None and drive >= DRIVE_HEAVY and a and a.roadAccessScore
                        and a.roadAccessScore <= POOR_ACCESS)
     access = ACCESS_PENALTY if poor_access and overrides.get("accessPenalty", True) else 1.0
-    a_site = a_median * visibility * access
+    a_site = a_median * NEW_ENTRANT * visibility * access
 
     def pulls(extra_x=(), extra_y=(), extra_a=()):
         """People-weighted pull of every store; column 0 is our site."""

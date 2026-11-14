@@ -8,7 +8,7 @@ from app.sim.huff import estimate_huff_demand
 from app.sim.risk import extract_risk_factors
 
 RUNS, MONTHS, PAYBACK_MONTHS = 1000, 24, 36
-CUSTOMER_SIGMA = 0.35
+CUSTOMER_SIGMA = 0.6  # first-year sales forecasts routinely miss by 50%+
 RAMP_START = 0.4
 
 

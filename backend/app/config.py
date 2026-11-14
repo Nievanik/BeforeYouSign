@@ -41,7 +41,7 @@ BUSINESS_PROFILES = {
         "cogsMax": 0.35,
         "laborFixedMonthly": 7000.0,
         "laborVariablePct": 0.0,
-        "otherFixedMonthly": 1500.0,
+        "otherFixedMonthly": 6200.0,  # incl. owner pay, card fees, insurance, utilities, marketing: typical shop nets ~10%
         "daysOpen": 30,
         "rampMin": 3,
         "rampMax": 9,
@@ -61,7 +61,7 @@ BUSINESS_PROFILES = {
         "cogsMax": 0.35,
         "laborFixedMonthly": 14400.0,
         "laborVariablePct": 0.0,
-        "otherFixedMonthly": 1500.0,
+        "otherFixedMonthly": 8100.0,  # typical shop nets ~10% (see boba)
         "daysOpen": 30,
         "rampMin": 3,
         "rampMax": 9,
@@ -81,7 +81,7 @@ BUSINESS_PROFILES = {
         "cogsMax": 0.32,
         "laborFixedMonthly": 28800.0,
         "laborVariablePct": 0.0,
-        "otherFixedMonthly": 4000.0,
+        "otherFixedMonthly": 20200.0,  # typical shop nets ~10% (see boba)
         "daysOpen": 30,
         "rampMin": 3,
         "rampMax": 9,
@@ -101,7 +101,7 @@ BUSINESS_PROFILES = {
         "cogsMax": 0.12,
         "laborFixedMonthly": 3000.0,
         "laborVariablePct": 0.40,
-        "otherFixedMonthly": 1500.0,
+        "otherFixedMonthly": 11300.0,  # typical shop nets ~10% (see boba)
         "daysOpen": 26,
         "rampMin": 6,
         "rampMax": 12,
@@ -121,7 +121,7 @@ BUSINESS_PROFILES = {
         "cogsMax": 0.52,
         "laborFixedMonthly": 7000.0,
         "laborVariablePct": 0.0,
-        "otherFixedMonthly": 1500.0,
+        "otherFixedMonthly": 12800.0,  # typical shop nets ~10% (see boba)
         "daysOpen": 30,
         "rampMin": 4,
         "rampMax": 10,
