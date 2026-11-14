@@ -3,12 +3,12 @@
 Tick boxes as you go (`[ ]` → `[x]`). Owners: **A** = backend/data, **B** = frontend/agent, **AB** = both together.
 Each phase ends with a **gate**: a concrete check that must pass before moving on. If a phase overruns by more than 30 min, apply the cut order at the bottom.
 
-**Status:** Phase 0 done (except accounts) · next: Phase 1 · last updated 2026-11-14
+**Status:** Phase 1 done (gate passes) · next: Phase 2 · last updated 2026-11-14
 
 | # | Phase | Time | Owner | Status |
 |---|---|---|---|---|
 | 0 | Setup and design | before build day | AB | ✅ mostly done |
-| 1 | Contract and skeleton | 0:00–0:45 | AB | ⬜ |
+| 1 | Contract and skeleton | 0:00–0:45 | AB | ✅ |
 | 2 | Data and tools | 0:45–4:00 | A (B: UI on fixture) | ⬜ |
 | 3 | Simulation | 4:00–6:00 | A (B: charts) | ⬜ |
 | 4 | Agent | 4:00–7:30 | B | ⬜ |
@@ -35,11 +35,11 @@ Each phase ends with a **gate**: a concrete check that must pass before moving o
 
 ## Phase 1: Contract and skeleton (AB, 0:00–0:45)
 
-- [ ] Freeze `Site`, `Competitor`, `SimResult`, `RunResult` from `data-schema.md` → `backend/app/models.py` + `frontend/src/types.ts`
-- [ ] Write `backend/fixtures/golden_run.json`: one fake `RunResult` with 3 sites, used by B until real data flows
-- [ ] Backend skeleton: FastAPI `main.py`, `config.py` (reads `.env`), `cache.py` (JSON file cache + `OFFLINE=1`), `/health`
-- [ ] Frontend skeleton: Vite + React + TS, MapLibre map renders Houston
-- [ ] `backend/requirements.txt`: fastapi, uvicorn, pydantic, pandas (or duckdb), numpy, requests, shapely, pillow, certifi, deepagents, langchain-openai, python-dotenv
+- [x] Freeze `Site`, `Competitor`, `SimResult`, `RunResult` from `data-schema.md` → `backend/app/models.py` + `frontend/src/types.ts`
+- [x] Write `backend/fixtures/golden_run.json`: one fake `RunResult` with 3 sites, used by B until real data flows
+- [x] Backend skeleton: FastAPI `main.py`, `config.py` (reads `.env`), `cache.py` (JSON file cache + `OFFLINE=1`), `/health`
+- [x] Frontend skeleton: Vite + React + TS, MapLibre map renders Houston
+- [ ] `backend/requirements.txt` (base done; add the rest when Phase 2 needs them): fastapi, uvicorn, pydantic, pandas (or duckdb), numpy, requests, shapely, pillow, certifi, deepagents, langchain-openai, python-dotenv
 
 **Gate:** `/health` returns ok; the frontend shows a map and loads the fixture.
 
