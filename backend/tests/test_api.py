@@ -20,3 +20,13 @@ def test_golden_run_matches_contract():
 
 def test_unknown_run_404():
     assert client.get("/api/runs/nope").status_code == 404
+
+
+def test_analyze_endpoint_starts_run():
+    resp = client.post("/api/analyze", json={"query": "Boba shop in Houston, max $6k/month rent"})
+    assert resp.status_code == 202
+    data = resp.json()
+    assert "runId" in data
+    assert data["brief"]["businessType"] == "boba"
+    assert data["brief"]["city"] == "Houston"
+
