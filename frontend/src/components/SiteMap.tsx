@@ -8,6 +8,7 @@ import type { Site } from '../types'
 maplibregl.setWorkerUrl(workerUrl)
 
 const HOUSTON: [number, number] = [-95.3698, 29.7604]
+const KIND_COLOR = { competitor: '#d62728', complement: '#2ca02c', neutral: '#888' }
 
 export default function SiteMap({ sites }: { sites: Site[] }) {
   const el = useRef<HTMLDivElement>(null)
@@ -36,6 +37,15 @@ export default function SiteMap({ sites }: { sites: Site[] }) {
       const popup = new maplibregl.Popup({ offset: 25 }).setText(`#${i + 1} ${s.address}: ${odds}`)
       return new maplibregl.Marker().setLngLat([s.lon, s.lat]).setPopup(popup).addTo(m)
     })
+    // nearby businesses as small dots: red = competitor, green = complement (draws customers), grey = neutral
+    for (const s of sites) {
+      for (const c of s.competitors) {
+        const dot = document.createElement('div')
+        dot.style.cssText = `width:10px;height:10px;border-radius:50%;border:1.5px solid #fff;cursor:pointer;background:${KIND_COLOR[c.kind]}`
+        const popup = new maplibregl.Popup({ offset: 8 }).setText(`${c.name} (${c.kind}, ${c.distanceMi} mi)`)
+        markers.push(new maplibregl.Marker({ element: dot }).setLngLat([c.lon, c.lat]).setPopup(popup).addTo(m))
+      }
+    }
     const bounds = new maplibregl.LngLatBounds()
     sites.forEach((s) => bounds.extend([s.lon, s.lat]))
     m.fitBounds(bounds, { padding: 80, maxZoom: 14 })

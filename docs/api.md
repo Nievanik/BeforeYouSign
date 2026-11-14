@@ -32,7 +32,8 @@ One `event:` per message, `data:` is JSON.
 
 | event | data | When |
 |---|---|---|
-| `brief` | `BusinessBrief` | Request parsed |
+| `brief` | `BusinessBrief` | Request parsed, and again whenever the agent relaxes a limit |
+| `plan` | `{ "todos": [{ "title": "...", "status": "pending" \| "in_progress" \| "completed" }] }` | The agent writes or updates its plan |
 | `step` | `{ "id": "s3", "tool": "vexcel", "siteId": "L123", "message": "Reading the aerial image of 9700 Tanner Rd", "status": "running" \| "done" \| "error" }` | Each tool call starts and ends |
 | `site` | `Site` | A site's evidence is complete (cards appear one by one) |
 | `sim` | `{ "siteId": "L123", "result": SimResult }` | Simulation finished for a site |
@@ -42,9 +43,13 @@ One `event:` per message, `data:` is JSON.
 
 A tool failure on one site never kills the run: that site's card shows a "data missing" note.
 
+The stream replays from the first event, so a reconnect or late subscriber misses nothing. Every event has an `id`. `done` always comes last, even after a fatal `error`. An unknown `runId` gets one fatal `error` event.
+
 ## `GET /runs/{runId}`
 
-Returns `RunResult` (brief, sites with sim results, report). `404` if the id is unknown.
+Returns `RunResult` (brief, sites with sim results, report). `404` if the id is unknown, `409` while the run is still going. Runs are kept in memory, so a server restart forgets them (`golden` is always there).
+
+The first clean live run of each query is recorded to `backend/cache/runs/`. With `OFFLINE=1`, `/analyze` replays that recording (same events, pauses capped at 2 s), so the demo shows the agent's plan with Wi-Fi off. Delete the recording to re-record.
 
 ## `GET /sites/{siteId}/aerial.jpg`
 
@@ -53,6 +58,10 @@ Cached Vexcel ortho image with the parcel outline drawn on it. The key stays ser
 ## `GET /sites/{siteId}/oblique/{direction}.jpg`
 
 Cached Vexcel angled photo (`north`/`east`/`south`/`west`, newest capture), parcel outlined. `oblique-north` = camera **facing** north, so it shows the building's south side. `404` if that direction isn't available.
+
+## `GET /sites/{id}/floorplan.jpg`
+
+Cached Matterport floor plan of the site's 3D scan. `404` if the site has no scan or no floor plan.
 
 ## `GET /health`
 

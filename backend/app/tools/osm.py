@@ -7,7 +7,9 @@ from app.cache import cached
 from app.geo import miles
 from app.models import Competitor
 
-OVERPASS = "https://overpass-api.de/api/interpreter"
+# the main server rate-limits or refuses whole networks at times; mirrors serve the same data
+OVERPASS = ["https://overpass-api.de/api/interpreter", "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
+            "https://overpass.private.coffee/api/interpreter", "https://overpass.kumi.systems/api/interpreter"]
 # simulation.md: (rating/4)^2 * log(1+reviews), with 4.0 stars / 20 reviews when unknown
 DEFAULT_ATTRACTIVENESS = round(math.log(1 + 20), 3)
 _PART = re.compile(r'\["(\w+)"(=|~)"([^"]+)"(,i)?\]')
@@ -33,13 +35,19 @@ def competitors(lat: float, lon: float, business_type: str, radius_mi: float = 1
     query = f"[out:json][timeout:25];({lines});out center tags;"
 
     def fetch():
-        r = http.request("POST", OVERPASS, data={"data": query})
-        r.raise_for_status()
-        j = r.json()
-        # Overpass reports timeouts as 200 + a "remark"; never cache that as "no competitors"
-        if "error" in (j.get("remark") or ""):
-            raise RuntimeError(f"overpass: {j['remark'][:120]}")
-        return j["elements"]
+        errors = []
+        for url in OVERPASS:
+            try:
+                r = http.request("POST", url, retries=1, timeout=30, data={"data": query})
+                r.raise_for_status()
+                j = r.json()
+                # Overpass reports timeouts as 200 + a "remark"; never cache that as "no competitors"
+                if "error" in (j.get("remark") or ""):
+                    raise RuntimeError(j["remark"][:120])
+                return j["elements"]
+            except Exception as e:
+                errors.append(f"{url.split('/')[2]}: {str(e)[:60]}")
+        raise RuntimeError("overpass unreachable (" + "; ".join(errors) + ")")
 
     out = []
     for e in cached("osm", {"q": query}, fetch):
