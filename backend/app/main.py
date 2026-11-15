@@ -20,7 +20,7 @@ from app.agent.report import generate_report
 from app.agent.run import Run, ranked, run_agent
 from app.cache import CacheMiss, cached
 from app.models import BusinessBrief, RunResult, SimResult, Site
-from app.sim import simulate
+from app.sim import PROFILE_FIELDS, simulate
 from app.tools import costar, matterport, vexcel
 
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures"
@@ -164,7 +164,10 @@ class SimulateRequest(BaseModel):
 @api.post("/simulate", response_model=SimResult)
 def simulate_site(req: SimulateRequest):
     try:
-        profile = _get_profile(req.businessType)
+        # a simulated site carries every profile number it used: reuse them, so what-ifs stay on that
+        # business's numbers (incl. AI-estimated profiles) with no LLM call
+        saved = req.site.sim.assumptions if req.site.sim else {}
+        profile = {k: saved[k] for k in PROFILE_FIELDS} if PROFILE_FIELDS <= saved.keys() else _get_profile(req.businessType)
         return simulate(req.site, profile, req.overrides, seed=req.seed)
     except Exception as e:
         raise HTTPException(400, f"simulation failed: {e}")

@@ -123,6 +123,17 @@ def test_simulate_site_with_overrides():
     assert res2["pProfitableBy12"] >= res1["pProfitableBy12"]
 
 
+def test_what_if_keeps_the_sites_own_business_numbers():
+    """The What-If panel sends businessType "boba" for every site: a simulated salon must stay a salon."""
+    from app import config, sim
+    from app.models import Site
+    site = Site(**client.get("/api/runs/golden").json()["sites"][0])
+    site.sim = sim.simulate(site, config.BUSINESS_PROFILES["salon"])
+    res = client.post("/api/simulate", json={"site": site.model_dump(), "businessType": "boba", "overrides": {}}).json()
+    assert res["pProfitableBy12"] == site.sim.pProfitableBy12
+    assert res["assumptions"]["typicalDailyCustomers"] == 25
+
+
 def test_analyze_uses_llm_brief_when_available(monkeypatch):
     from app import main
     from app.models import BusinessBrief
