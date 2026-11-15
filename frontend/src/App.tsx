@@ -45,7 +45,7 @@ export default function App() {
       body: JSON.stringify({ query }),
     })
       .then((res) => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        if (!res.ok) return res.json().catch(() => ({})).then((b) => { throw new Error(b.detail || `HTTP ${res.status}`) })
         return res.json()
       })
       .then(({ runId, brief }: { runId: string; brief: BusinessBrief }) => {

@@ -183,3 +183,13 @@ def test_demo_mode_replays_the_matching_dataset(monkeypatch, tmp_path):
     assert main.demo_dataset("a pizza place")["result"]["brief"]["businessType"] == "restaurant"
     r = client.post("/api/analyze", json={"query": "barber shop"})
     assert r.status_code == 202 and r.json()["brief"]["businessType"] == "salon"
+
+
+def test_demo_rejects_gibberish_and_routes_known_businesses(monkeypatch):
+    from app import config
+    monkeypatch.setattr(config, "DEMO", True)
+    for bad in ["", "   ", "sdfs", "123", "!!"]:
+        assert client.post("/api/analyze", json={"query": bad}).status_code == 400, bad
+    from app.main import demo_dataset
+    assert demo_dataset("Hair salon in Montrose")["result"]["brief"]
+    assert demo_dataset("boba shop near Rice")["result"]["brief"]

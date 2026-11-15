@@ -40,9 +40,18 @@ MAX_REPLAY_GAP_S = 2.0
 DEMO_REPLAY_GAP_S = 2.5  # demo pauses up to ~2.5s per slow step so it feels like live API calls
 
 
+DEMO_SALON = r"\b(salon|hair|barber|beauty|nails?|spa)"
+DEMO_FOOD = r"\b(restaurant|food|eat|dining|diner|caf[eé]|coffee|boba|tea|bakery|pizza|burger|taco|sushi|ramen|noodle|grill|kitchen|deli|juice|dessert|bar\b)"
+
+
 def demo_dataset(query: str) -> dict:
-    """The saved run for this query: hair salon, else restaurant (scripts/record_demo.py makes them)."""
-    name = "salon" if re.search(r"salon|hair|barber|beauty", query, re.I) else "restaurant"
+    """The saved run for this query: hair salon or restaurant (scripts/record_demo.py makes them)."""
+    if re.search(DEMO_SALON, query, re.I):
+        name = "salon"
+    elif re.search(DEMO_FOOD, query, re.I):
+        name = "restaurant"
+    else:  # gibberish or a business the demo has no data for
+        raise HTTPException(400, "Try a restaurant, café or hair salon in Houston, e.g. \"boba shop near Rice Village\".")
     path = config.DEMO_DIR / f"{name}.json"
     if not path.exists():
         raise HTTPException(503, f"demo dataset missing: run scripts/record_demo.py ({path.name})")
@@ -178,7 +187,9 @@ def health():
 @api.post("/analyze", status_code=status.HTTP_202_ACCEPTED)
 def analyze(req: AnalyzeRequest):
     if not req.query.strip() and not req.brief:
-        raise HTTPException(400, "empty query")
+        raise HTTPException(400, "Please describe the business you want to open.")
+    if not req.brief and not re.search(r"[a-z]{3,}", req.query, re.I):  # '', 'sdf!', '123'
+        raise HTTPException(400, "Please describe the business you want to open.")
 
     if config.DEMO:  # no LLM, no APIs: replay the saved dataset
         recording = demo_dataset(req.query)
