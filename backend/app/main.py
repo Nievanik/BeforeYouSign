@@ -37,7 +37,7 @@ class AnalyzeRequest(BaseModel):
 
 
 MAX_REPLAY_GAP_S = 2.0
-DEMO_REPLAY_GAP_S = 0.3  # demo datasets replay quickly: they are for developing other features
+DEMO_REPLAY_GAP_S = 2.5  # demo pauses up to ~2.5s per slow step so it feels like live API calls
 
 
 def demo_dataset(query: str) -> dict:
