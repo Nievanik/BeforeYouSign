@@ -60,10 +60,13 @@ export default function SiteMap({ sites, selectedSiteId, onSelectSite }: SiteMap
     sites.forEach((s, i) => {
       bounds.extend([s.lon, s.lat])
 
+      // MapLibre overwrites the marker element's transform, so the rotated teardrop lives in an inner div
       const markerEl = document.createElement('div')
-      markerEl.className = `site-pin rank-${i + 1} ${selectedRef.current === s.id ? 'is-selected' : ''}`
-      sitePins.current.set(s.id, markerEl)
-      markerEl.innerHTML = `<span class="pin-number">#${i + 1}</span>`
+      const pinEl = document.createElement('div')
+      pinEl.className = `site-pin rank-${i + 1} ${selectedRef.current === s.id ? 'is-selected' : ''}`
+      pinEl.innerHTML = `<span class="pin-number">#${i + 1}</span>`
+      markerEl.appendChild(pinEl)
+      sitePins.current.set(s.id, pinEl)
       markerEl.title = `${s.address}`
 
       if (onSelectSite) {
@@ -97,7 +100,8 @@ export default function SiteMap({ sites, selectedSiteId, onSelectSite }: SiteMap
       `
 
       const popup = new maplibregl.Popup({ offset: 24, closeButton: false }).setHTML(popupHtml)
-      const marker = new maplibregl.Marker({ element: markerEl })
+      // tip of the rotated teardrop sits ~7px below its box, so lift it onto the location
+      const marker = new maplibregl.Marker({ element: markerEl, anchor: 'bottom', offset: [0, -7] })
         .setLngLat([s.lon, s.lat])
         .setPopup(popup)
         .addTo(m)
