@@ -9,12 +9,6 @@ interface QueryBoxProps {
   onTogglePanel?: () => void
 }
 
-const PRESETS = [
-  'Boba shop in Houston, max $6k/month rent, needs parking',
-  'Coffee shop in Houston, max $8k/month rent, near daytime workers',
-  'Hair salon in Houston, max $5k/month rent, 1000-1500 sq ft',
-]
-
 export default function QueryBox({ brief, onSearch, loading = false, onTogglePanel }: QueryBoxProps) {
   const [query, setQuery] = useState('')
 
@@ -95,25 +89,6 @@ export default function QueryBox({ brief, onSearch, loading = false, onTogglePan
           ))}
         </div>
       )}
-
-      <div className="presets-row">
-        <span className="presets-label">Popular ideas:</span>
-        <div className="preset-pill-list">
-          {PRESETS.map((p) => (
-            <button
-              type="button"
-              key={p}
-              className="preset-pill"
-              onClick={() => {
-                setQuery(p)
-                if (onSearch) onSearch(p)
-              }}
-            >
-              {p.split(',')[0]}
-            </button>
-          ))}
-        </div>
-      </div>
     </div>
   )
 }

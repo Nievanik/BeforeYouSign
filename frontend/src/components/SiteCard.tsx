@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import type { SimResult, Site } from '../types'
 import AssumptionsPanel from './AssumptionsPanel'
 import ProfitFan from './ProfitFan'
@@ -62,6 +63,17 @@ export default function SiteCard({
   const [overrideSim, setOverrideSim] = useState<SimResult | null>(null)
   const [simulating, setSimulating] = useState(false)
   const [simError, setSimError] = useState('')
+  const [floorplanFs, setFloorplanFs] = useState(false)
+
+  useEffect(() => {
+    if (!floorplanFs) return
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setFloorplanFs(false)
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [floorplanFs])
+
   const runSimulation = () => {
     if (!onSimulate) return
     setSimulating(true)
@@ -76,8 +88,39 @@ export default function SiteCard({
   const color = oddsColor(odds)
   const src = view === 'above' ? a?.imageUrl : `/api/sites/${site.id}/oblique/${view}.jpg`
 
+  const handleCardClick = (e: React.MouseEvent<HTMLElement>) => {
+    const target = e.target as HTMLElement | null
+    if (!target) return
+
+    // Do not trigger location focus when clicking on the graph, floorplan, 3D model tour, or controls
+    if (
+      target.closest('.fan-chart-wrapper') ||
+      target.closest('.profit-fan') ||
+      target.closest('.fan-svg') ||
+      target.closest('.floorplan-details') ||
+      target.closest('.floorplan-wrapper') ||
+      target.closest('.floorplan-modal-overlay') ||
+      target.closest('.tour-figure') ||
+      target.closest('.tour-wrapper') ||
+      target.closest('.tour') ||
+      target.closest('.tour-trigger-btn') ||
+      target.closest('.assumptions-panel') ||
+      target.closest('.views') ||
+      target.closest('button') ||
+      target.closest('input') ||
+      target.closest('select') ||
+      target.closest('details') ||
+      target.closest('summary') ||
+      target.closest('a')
+    ) {
+      return
+    }
+
+    onSelect?.()
+  }
+
   return (
-    <article ref={ref} className={`card ${selected ? 'is-selected' : ''}`} onClick={onSelect}>
+    <article ref={ref} className={`card ${selected ? 'is-selected' : ''}`} onClick={handleCardClick}>
       <div className="card-header">
         <h2>
           #{rank} {site.address}
@@ -218,7 +261,7 @@ export default function SiteCard({
 
       {/* Profit Fan Chart toggle */}
       {currentSim && currentSim.monthlyBands && (
-        <div className="fan-chart-wrapper">
+        <div className="fan-chart-wrapper" onClick={(e) => e.stopPropagation()}>
           <button
             type="button"
             className="toggle-btn"
@@ -300,15 +343,66 @@ export default function SiteCard({
       {/* 3D Scan & Floor plan (Matterport) */}
       {site.interior?.summary && <p className="summary">{site.interior.summary}</p>}
       {site.matterportModelId && (
-        <details className="floorplan-details">
+        <details className="floorplan-details" onClick={(e) => e.stopPropagation()}>
           <summary>Floor plan</summary>
-          <img
-            src={`/api/sites/${site.id}/floorplan.jpg`}
-            alt={`Floor plan of the 3D scan at ${site.address}`}
-            loading="lazy"
-          />
+          <div className="floorplan-wrapper">
+            <img
+              src={`/api/sites/${site.id}/floorplan.jpg`}
+              alt={`Floor plan of the 3D scan at ${site.address}`}
+              loading="lazy"
+              className="floorplan-img"
+              onClick={() => setFloorplanFs(true)}
+            />
+            <button
+              type="button"
+              className="floorplan-fs-btn"
+              onClick={() => setFloorplanFs(true)}
+              title="Full screen"
+              aria-label="Full screen"
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M15 3h6v6m0-6L14 10M9 21H3v-6m0 6l7-7M3 9V3h6M3 3l7 7m11 11v-6h-6m6 6l-7-7" />
+              </svg>
+            </button>
+          </div>
         </details>
       )}
+
+      {floorplanFs &&
+        createPortal(
+          <div
+            className="floorplan-modal-overlay"
+            role="dialog"
+            aria-modal="true"
+            aria-label={`Floor plan of ${site.address}`}
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setFloorplanFs(false)
+            }}
+          >
+            <div className="floorplan-modal-header">
+              <span className="floorplan-modal-title">Floor plan · {site.address}</span>
+              <button
+                type="button"
+                className="floorplan-modal-close-btn"
+                onClick={() => setFloorplanFs(false)}
+                title="Exit full screen"
+                aria-label="Exit full screen"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+                <span>Close</span>
+              </button>
+            </div>
+            <img
+              src={`/api/sites/${site.id}/floorplan.jpg`}
+              alt={`Floor plan of the 3D scan at ${site.address}`}
+              className="floorplan-modal-img"
+            />
+          </div>,
+          document.body
+        )}
 
       {site.matterportModelId ? (
         <TourEmbed

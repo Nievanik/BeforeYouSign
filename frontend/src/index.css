@@ -24,6 +24,7 @@
   --color-accent: #DA4324;         /* Burnt orange / red */
   --color-accent-hover: #BF361B;
   --color-accent-secondary: #E9AD70; /* Muted apricot */
+  --color-complement: #60733E;     /* Olive green */
   --color-sage: #5A6D41;           /* Sage green */
 
   --border-color: #D8C9B3;         /* Warm beige */
@@ -370,7 +371,7 @@ input, select, textarea {
 .legend-icon.compl-icon {
   width: 14px;
   height: 14px;
-  background-color: var(--color-accent-secondary);
+  background-color: var(--color-complement);
   border: 2px solid #ffffff;
 }
 
@@ -448,7 +449,7 @@ input, select, textarea {
 }
 
 .comp-pin-complement {
-  background-color: var(--color-accent-secondary);
+  background-color: var(--color-complement);
 }
 
 /* Maplibre Popup Design */
@@ -541,9 +542,9 @@ input, select, textarea {
 }
 
 .tag-compl {
-  background-color: var(--bg-apricot-soft);
-  color: #8C531B;
-  border: 1px solid rgba(233, 173, 112, 0.35);
+  background-color: var(--bg-sage-soft);
+  color: #3E4928;
+  border: 1px solid rgba(96, 115, 62, 0.35);
 }
 
 .popup-comp-name {
@@ -1243,6 +1244,335 @@ figcaption {
   padding: 8px 12px;
   border-radius: var(--radius-md);
   border: 1px dashed var(--border-color);
+}
+
+/* ============================================================
+   MATTERPORT 3D TOUR & FULLSCREEN
+   ============================================================ */
+.tour-trigger-btn {
+  background: var(--bg-secondary);
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-pill);
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-primary);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  width: fit-content;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.tour-trigger-btn:hover {
+  background: var(--color-primary);
+  color: #ffffff;
+  border-color: var(--color-primary);
+  transform: translateY(-1px);
+}
+
+.tour-figure {
+  margin: 6px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tour-wrapper {
+  position: relative;
+  width: 100%;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background-color: #1a1a1a;
+  border: 1.5px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+}
+
+.tour {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  min-height: 230px;
+  display: block;
+  border: 0;
+  margin: 0;
+  padding: 0;
+  background-color: #1a1a1a;
+}
+
+.tour-fs-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(30, 30, 30, 0.7);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: var(--radius-sm);
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.2s ease;
+}
+
+.tour-fs-btn:hover {
+  background: rgba(0, 0, 0, 0.9);
+  border-color: rgba(255, 255, 255, 0.6);
+  transform: scale(1.05);
+}
+
+/* Native Fullscreen API styling */
+.tour:fullscreen,
+.tour:-webkit-full-screen,
+.tour:-moz-full-screen,
+.tour:-ms-fullscreen {
+  width: 100vw !important;
+  height: 100vh !important;
+  max-width: 100vw !important;
+  max-height: 100vh !important;
+  min-width: 100vw !important;
+  min-height: 100vh !important;
+  border: none !important;
+  border-radius: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background-color: #000000 !important;
+  position: fixed !important;
+  inset: 0 !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  z-index: 2147483647 !important;
+  object-fit: contain;
+}
+
+.tour-wrapper:fullscreen,
+.tour-wrapper:-webkit-full-screen,
+.tour-wrapper:-moz-full-screen,
+.tour-wrapper:-ms-fullscreen {
+  width: 100vw !important;
+  height: 100vh !important;
+  max-width: 100vw !important;
+  max-height: 100vh !important;
+  border: none !important;
+  border-radius: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background-color: #000000 !important;
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 2147483647 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.tour-wrapper:fullscreen .tour,
+.tour-wrapper:-webkit-full-screen .tour {
+  width: 100vw !important;
+  height: 100vh !important;
+  max-width: 100vw !important;
+  max-height: 100vh !important;
+  border: none !important;
+  border-radius: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Fallback Portal Fullscreen Overlay */
+.tour-portal-overlay {
+  position: fixed;
+  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 2147483647;
+  background-color: #000000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.tour-portal-overlay .tour {
+  width: 100vw;
+  height: 100vh;
+  max-width: 100vw;
+  max-height: 100vh;
+  border: none;
+  border-radius: 0;
+}
+
+.tour-portal-close-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: rgba(30, 30, 30, 0.8);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: var(--radius-sm);
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 2147483648;
+  transition: all 0.2s ease;
+}
+
+.tour-portal-close-btn:hover {
+  background: rgba(0, 0, 0, 0.95);
+  border-color: rgba(255, 255, 255, 0.7);
+  transform: scale(1.05);
+}
+
+/* ============================================================
+   FLOOR PLAN & FULLSCREEN
+   ============================================================ */
+.floorplan-details {
+  margin: 6px 0 0;
+  width: 100%;
+  max-width: 100%;
+}
+
+.floorplan-details summary {
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--color-primary);
+  user-select: none;
+  padding: 4px 0;
+}
+
+.floorplan-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  margin-top: 6px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1.5px solid var(--border-color);
+  background: #ffffff;
+  display: flex;
+}
+
+.floorplan-img {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  display: block;
+  object-fit: contain;
+  cursor: pointer;
+}
+
+.floorplan-fs-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(30, 30, 30, 0.7);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: var(--radius-sm);
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.2s ease;
+}
+
+.floorplan-fs-btn:hover {
+  background: rgba(0, 0, 0, 0.9);
+  border-color: rgba(255, 255, 255, 0.6);
+  transform: scale(1.05);
+}
+
+/* Floor Plan Fullscreen Modal */
+.floorplan-modal-overlay {
+  position: fixed;
+  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 2147483647;
+  background-color: rgba(0, 0, 0, 0.92);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.floorplan-modal-header {
+  position: absolute;
+  top: 16px;
+  left: 20px;
+  right: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #ffffff;
+  z-index: 10;
+}
+
+.floorplan-modal-title {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+  color: #f3e5d5;
+}
+
+.floorplan-modal-close-btn {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: var(--radius-sm);
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.floorplan-modal-close-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
+.floorplan-modal-img {
+  max-width: 92vw;
+  max-height: 86vh;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: var(--radius-sm);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
 }
 
 /* ============================================================

@@ -94,7 +94,7 @@ const TOOL_CONFIG: Record<string, { label: string; icon: string }> = {
 }
 
 export default function AgentLogPanel({ steps = DEFAULT_EXAMPLE_STEPS }: { steps?: AgentStep[] }) {
-  const [collapsed, setCollapsed] = useState(false)
+  const [collapsed, setCollapsed] = useState(true)
   const isAnyRunning = steps.some((s) => s.status === 'running')
 
   return (
