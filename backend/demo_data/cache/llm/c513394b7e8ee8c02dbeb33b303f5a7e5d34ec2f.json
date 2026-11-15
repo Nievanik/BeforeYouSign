@@ -1,0 +1,1 @@
+{"cogsMax": 0.35, "cogsMin": 0.28, "daysOpen": 26, "laborFixedMonthly": 7500, "laborVariablePct": 0.25, "lambda": 2.0, "newCompetitorRatePerYear": 1.0, "otherFixedMonthly": 4000, "radiusMi": 2.0, "rampMax": 9, "rampMin": 4, "rentShareMax": 0.08, "startupCost": 300000, "ticket": 22, "ticketSd": 7, "typicalDailyCustomers": 120, "workerWeight": 0.5}
