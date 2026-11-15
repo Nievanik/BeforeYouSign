@@ -24,6 +24,7 @@
   --color-accent: #DA4324;         /* Burnt orange / red */
   --color-accent-hover: #BF361B;
   --color-accent-secondary: #E9AD70; /* Muted apricot */
+  --color-complement: #60733E;     /* Olive green */
   --color-sage: #5A6D41;           /* Sage green */
 
   --border-color: #D8C9B3;         /* Warm beige */
@@ -370,7 +371,7 @@ input, select, textarea {
 .legend-icon.compl-icon {
   width: 14px;
   height: 14px;
-  background-color: var(--color-accent-secondary);
+  background-color: var(--color-complement);
   border: 2px solid #ffffff;
 }
 
@@ -448,7 +449,7 @@ input, select, textarea {
 }
 
 .comp-pin-complement {
-  background-color: var(--color-accent-secondary);
+  background-color: var(--color-complement);
 }
 
 /* Maplibre Popup Design */
@@ -541,9 +542,9 @@ input, select, textarea {
 }
 
 .tag-compl {
-  background-color: var(--bg-apricot-soft);
-  color: #8C531B;
-  border: 1px solid rgba(233, 173, 112, 0.35);
+  background-color: var(--bg-sage-soft);
+  color: #3E4928;
+  border: 1px solid rgba(96, 115, 62, 0.35);
 }
 
 .popup-comp-name {

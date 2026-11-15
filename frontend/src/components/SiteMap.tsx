@@ -190,36 +190,38 @@ export default function SiteMap({ sites, selectedSiteId, onSelectSite }: SiteMap
       <div ref={el} style={{ width: '100%', height: '100%' }} />
 
       {/* Map Legend and Filter Controls */}
-      <div className="map-legend-card editorial-card">
-        <div className="legend-title">
-          <span className="legend-spark">✦</span> Map Layers
-        </div>
-        <div className="legend-items">
-          <div className="legend-item">
-            <span className="legend-icon site-icon">#1</span>
-            <span className="legend-label">Candidate Sites ({sites.length})</span>
+      {sites.length > 0 && (
+        <div className="map-legend-card editorial-card">
+          <div className="legend-title">
+            <span className="legend-spark">✦</span> Map Layers
           </div>
-          <label className="legend-item checkbox-label">
-            <input
-              type="checkbox"
-              checked={showCompetitors}
-              onChange={(e) => setShowCompetitors(e.target.checked)}
-            />
-            <span className="legend-icon comp-icon" />
-            <span className="legend-label">Competitors</span>
-            {noCompetitorData && <span className="legend-note">(lookup failed, try again)</span>}
-          </label>
-          <label className="legend-item checkbox-label">
-            <input
-              type="checkbox"
-              checked={showComplements}
-              onChange={(e) => setShowComplements(e.target.checked)}
-            />
-            <span className="legend-icon compl-icon" />
-            <span className="legend-label">Complements (Schools/Transit)</span>
-          </label>
+          <div className="legend-items">
+            <div className="legend-item">
+              <span className="legend-icon site-icon">#1</span>
+              <span className="legend-label">Candidate Sites ({sites.length})</span>
+            </div>
+            <label className="legend-item checkbox-label">
+              <input
+                type="checkbox"
+                checked={showCompetitors}
+                onChange={(e) => setShowCompetitors(e.target.checked)}
+              />
+              <span className="legend-icon comp-icon" />
+              <span className="legend-label">Competitors</span>
+              {noCompetitorData && <span className="legend-note">(lookup failed, try again)</span>}
+            </label>
+            <label className="legend-item checkbox-label">
+              <input
+                type="checkbox"
+                checked={showComplements}
+                onChange={(e) => setShowComplements(e.target.checked)}
+              />
+              <span className="legend-icon compl-icon" />
+              <span className="legend-label">Complements (Schools/Transit)</span>
+            </label>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }

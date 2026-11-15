@@ -249,10 +249,20 @@ def get_run(run_id: str):
     return rec["result"]
 
 
+def _find_site(site_id: str):
+    for rec in RUNS.values():
+        res = rec.get("result")
+        if res and res.sites:
+            for s in res.sites:
+                if s.id == site_id:
+                    return s
+    return costar.get_site(site_id)
+
+
 @api.get("/sites/{site_id}/aerial.jpg")
 def aerial_jpg(site_id: str):
     # the Vexcel key stays server-side; the browser only sees this proxy
-    site = costar.get_site(site_id)
+    site = _find_site(site_id)
     if not site:
         raise HTTPException(404, "unknown site")
     wkt = vexcel.parcel(site.lat, site.lon)["wkt"]
@@ -263,7 +273,7 @@ def aerial_jpg(site_id: str):
 def oblique_jpg(site_id: str, direction: str):
     if f"oblique-{direction}" not in vexcel.DIRECTIONS:
         raise HTTPException(404, "unknown direction")
-    site = costar.get_site(site_id)
+    site = _find_site(site_id)
     if not site:
         raise HTTPException(404, "unknown site")
     wkt = vexcel.parcel(site.lat, site.lon)["wkt"]
@@ -274,7 +284,7 @@ def oblique_jpg(site_id: str, direction: str):
 
 @api.get("/sites/{site_id}/floorplan.jpg")
 def floorplan_jpg(site_id: str):
-    site = costar.get_site(site_id)
+    site = _find_site(site_id)
     img = site and site.matterportModelId and matterport.floorplan_jpeg(site.matterportModelId)
     if not img:
         raise HTTPException(404, "no floor plan for this site")

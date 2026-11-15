@@ -144,5 +144,20 @@ def workers_nearby(lat: float, lon: float, radius_mi: float, city: str = "Housto
 
 def get_site(site_id: str, city: str = "Houston") -> Site | None:
     """Look up one candidate by id ("L{listingId}-S{spaceId}"), ignoring rent/size filters."""
-    brief = BusinessBrief(businessType="any", city=city, maxRentMonthly=float("inf"))
-    return next((s for s in find_candidates(brief) if s.id == site_id), None)
+    try:
+        brief = BusinessBrief(businessType="any", city=city, maxRentMonthly=float("inf"))
+        site = next((s for s in find_candidates(brief) if s.id == site_id), None)
+        if site:
+            return site
+    except (FileNotFoundError, KeyError):
+        pass
+
+    # Fallback for demo datasets / golden fixtures when raw CoStar JSONL is not on disk
+    for path in [config.DEMO_DIR / "restaurant.json", config.DEMO_DIR / "salon.json", config.DEMO_DIR.parents[0] / "fixtures" / "golden_run.json"]:
+        if path.exists():
+            data = json.loads(path.read_text())
+            s_list = data.get("result", {}).get("sites", []) or data.get("sites", [])
+            for s in s_list:
+                if s.get("id") == site_id:
+                    return Site(**s)
+    return None
