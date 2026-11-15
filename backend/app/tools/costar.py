@@ -2,6 +2,7 @@
 import csv
 import json
 from functools import lru_cache
+from pathlib import Path
 
 from app import config
 from app.geo import miles
@@ -152,8 +153,8 @@ def get_site(site_id: str, city: str = "Houston") -> Site | None:
     except (FileNotFoundError, KeyError):
         pass
 
-    # Fallback for demo datasets / golden fixtures when raw CoStar JSONL is not on disk
-    for path in [config.DEMO_DIR / "restaurant.json", config.DEMO_DIR / "salon.json", config.DEMO_DIR.parents[0] / "fixtures" / "golden_run.json"]:
+    # Fallback to the golden fixture when raw CoStar JSONL is not on disk (dev has no demo datasets)
+    for path in [Path(__file__).resolve().parents[2] / "fixtures" / "golden_run.json"]:
         if path.exists():
             data = json.loads(path.read_text())
             s_list = data.get("result", {}).get("sites", []) or data.get("sites", [])
