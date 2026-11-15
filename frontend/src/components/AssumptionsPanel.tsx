@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import type { SimResult, Site } from '../types'
 
 interface AssumptionsPanelProps {
@@ -49,6 +49,7 @@ export default function AssumptionsPanel({
   const [simulatedOdds, setSimulatedOdds] = useState<number | null>(baseSim?.pProfitableBy12 ?? null)
 
   const handleReset = () => {
+    latest.current++ // drop any reply still in flight
     setForm({
       rentMonthly: initialRent,
       ticket: initialTicket,
@@ -63,18 +64,22 @@ export default function AssumptionsPanel({
     onSimResultUpdate(null) // reset to base
   }
 
+  const latest = useRef(0) // a slow reply for an older slider position must not overwrite a newer one
+
   const runWhatIf = async (currentForm: OverridesState) => {
+    const id = ++latest.current
     setLoading(true)
     setError(null)
     try {
       const cogsFraction = currentForm.cogsMid / 100
+      const cogsMoved = currentForm.cogsMid !== initialCogsMid // untouched: keep the profile's own range
       const overrides = {
         rentMonthly: currentForm.rentMonthly,
         ticket: currentForm.ticket,
         laborFixedMonthly: currentForm.laborFixedMonthly,
         startupCost: currentForm.startupCost,
-        cogsMin: Math.max(0.05, cogsFraction - 0.05),
-        cogsMax: Math.min(0.70, cogsFraction + 0.05),
+        cogsMin: cogsMoved ? Math.max(0.05, cogsFraction - 0.05) : initialCogsMin,
+        cogsMax: cogsMoved ? Math.min(0.70, cogsFraction + 0.05) : initialCogsMax,
         newCompetitors: currentForm.newCompetitors,
         accessPenalty: currentForm.accessPenalty,
       }
@@ -94,13 +99,14 @@ export default function AssumptionsPanel({
       }
 
       const updatedSim: SimResult = await res.json()
+      if (id !== latest.current) return
       setSimulatedOdds(updatedSim.pProfitableBy12)
       setHasChanged(true)
       onSimResultUpdate(updatedSim)
     } catch (err) {
-      setError(String(err))
+      if (id === latest.current) setError(String(err))
     } finally {
-      setLoading(false)
+      if (id === latest.current) setLoading(false)
     }
   }
 

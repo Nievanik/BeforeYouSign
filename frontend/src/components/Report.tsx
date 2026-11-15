@@ -11,6 +11,7 @@ const usd = (n: number) => `$${Math.round(n).toLocaleString()}`
 export default function Report({ run, onClose }: ReportProps) {
   const { brief, sites } = run
   const topSite: Site | undefined = sites[0]
+  const rentShareMax = Number(topSite?.sim?.assumptions?.rentShareMax ?? 0.15) // the business's own benchmark
 
   const handlePrint = () => {
     window.print()
@@ -144,22 +145,28 @@ export default function Report({ run, onClose }: ReportProps) {
           {/* Why Site #1 Won & Core Strengths */}
           {topSite && topSite.sim && (
             <section className="report-section strengths-section">
-              <h3>Key Decision Drivers: Why #{1} Wins</h3>
+              <h3>Key Decision Drivers for #1</h3>
               <div className="strengths-grid">
                 <div className="strength-item">
-                  <strong>Operating Safety Cushion:</strong> Requires{' '}
-                  {Math.round(topSite.sim.breakEvenCustomers)} customers/day to cover fixed expenses. Modeled customer
-                  pull is ~{Math.round(topSite.sim.expectedCustomers)}/day, leaving healthy operating buffer.
+                  <strong>Customer Cushion:</strong> Requires {Math.round(topSite.sim.breakEvenCustomers)} customers/day
+                  to cover fixed expenses. Modeled customer pull is ~{Math.round(topSite.sim.expectedCustomers)}/day
+                  {topSite.sim.expectedCustomers > topSite.sim.breakEvenCustomers
+                    ? `, a ${Math.round((topSite.sim.expectedCustomers / topSite.sim.breakEvenCustomers - 1) * 100)}% cushion.`
+                    : ': below break-even, so profit depends on beating the model.'}
                 </div>
                 <div className="strength-item">
-                  <strong>Sustainable Rent Ratio:</strong> Rent accounts for{' '}
-                  {Math.round((topSite.sim.rentShare ?? 0) * 100)}% of expected revenue, well within the retail safety
-                  benchmark (&lt;15%).
+                  <strong>Rent Ratio:</strong> Rent is {Math.round(topSite.sim.rentShare * 100)}% of expected revenue
+                  {topSite.sim.rentShare <= rentShareMax
+                    ? `, within the ${Math.round(rentShareMax * 100)}% benchmark for this business.`
+                    : `, above the ${Math.round(rentShareMax * 100)}% benchmark for this business.`}
                 </div>
                 <div className="strength-item">
-                  <strong>Accessibility & Parking:</strong> Aerial analysis confirms dedicated parking access
+                  <strong>Access & Parking:</strong>{' '}
+                  {topSite.parkingAvailable
+                    ? `CoStar records ${topSite.parkingSpaces ? `${topSite.parkingSpaces.toLocaleString()} parking spaces` : 'parking'} at this property`
+                    : 'Parking is not recorded for this property; confirm it in person'}
                   {topSite.aerial?.roadAccessScore != null &&
-                    ` and a road access score of ${topSite.aerial.roadAccessScore}/5`}
+                    `; road access scored ${topSite.aerial.roadAccessScore}/5 from the aerial photo`}
                   .
                 </div>
               </div>
